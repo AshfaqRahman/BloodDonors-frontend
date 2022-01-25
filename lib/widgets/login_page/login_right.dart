@@ -1,4 +1,6 @@
+import 'package:bms_project/providers/users.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class LoginRight extends StatefulWidget {
   VoidCallback switching;
@@ -10,7 +12,70 @@ class LoginRight extends StatefulWidget {
 }
 
 class _LoginRightState extends State<LoginRight> {
+  final FocusNode _passwordFocusNode = FocusNode();
+
   final _form = GlobalKey<FormState>();
+
+  var _passwordVisible = false;
+
+  late String _password;
+
+  late String _email;
+
+  Future<void> showAlertDialog(
+      BuildContext context, String alertTitle, String alertContent,
+      {bool flag = false}) async {
+    // Create button
+    Widget okButton = ElevatedButton(
+      child: Text("OK"),
+      onPressed: () {
+        Navigator.of(context).pop();
+      },
+    );
+
+    // Create AlertDialog
+    AlertDialog alert = AlertDialog(
+      title: Text(alertTitle),
+      content: Text(alertContent),
+      actions: [
+        okButton,
+      ],
+    );
+
+    // show the dialog
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return alert;
+      },
+    );
+  }
+
+  Future<void> _saveForm() async {
+    final is_valid =
+        _form.currentState != null ? _form.currentState!.validate() : false;
+    if (is_valid == false) {
+      return;
+    }
+    _form.currentState?.save();
+    Map<String, String> m = {
+      'email': _email,
+      'password': _password,
+    };
+    Provider.of<Users>(context, listen: false).signInUser(m).then((value) {
+      print(value);
+      if (value[0] == true) {
+        showAlertDialog(context, "signed in", "logged in successfully!",
+                flag: true)
+            .then((_) {});
+      } else if (value[0] == false) {
+        showAlertDialog(context, "not logged in", value[1]);
+      }
+    }).catchError((_) {
+      showAlertDialog(context, "server problem", "you got a problem!");
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Expanded(
@@ -26,39 +91,49 @@ class _LoginRightState extends State<LoginRight> {
                   shrinkWrap: true,
                   children: <Widget>[
                     TextFormField(
-                      // initialValue: "ashfaq",
                       decoration: const InputDecoration(labelText: 'Email'),
                       textInputAction: TextInputAction.next,
                       onFieldSubmitted: (_) {
-                        // FocusScope.of(context).requestFocus(_priceFocusNode);
+                        FocusScope.of(context).requestFocus(_passwordFocusNode);
                       },
                       validator: (value) {
-                        // if (value.isEmpty) {
-                        //   return 'Please provide a value.';
-                        // }
+                        if (value!.isEmpty) {
+                          return 'Please provide an email.';
+                        }
                         return null;
                       },
                       onSaved: (value) {
-                        // _editedProduct = Product(
-                        //     title: value,
-                        //     price: _editedProduct.price,
-                        //     description: _editedProduct.description,
-                        //     imageUrl: _editedProduct.imageUrl,
-                        //     id: _editedProduct.id,
-                        //     isFavorite: _editedProduct.isFavorite);
+                        _email = value!;
                       },
                     ),
                     TextFormField(
-                      // initialValue: _initValues['price'],
-                      decoration: InputDecoration(labelText: 'Password'),
+                      decoration: InputDecoration(
+                        labelText: 'Password',
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            // Based on passwordVisible state choose the icon
+                            _passwordVisible
+                                ? Icons.visibility
+                                : Icons.visibility_off,
+                            color: Theme.of(context).primaryColorDark,
+                          ),
+                          onPressed: () {
+                            // Update the state i.e. toogle the state of passwordVisible variable
+                            setState(() {
+                              _passwordVisible = !_passwordVisible;
+                            });
+                          },
+                        ),
+                      ),
+                      obscureText: !_passwordVisible,
                       textInputAction: TextInputAction.next,
-                      keyboardType: TextInputType.number,
-                      // focusNode: _priceFocusNode,
                       onFieldSubmitted: (_) {},
                       validator: (value) {
                         return null;
                       },
-                      onSaved: (value) {},
+                      onSaved: (value) {
+                        _password = value!;
+                      },
                     ),
                   ],
                 ),
@@ -102,14 +177,5 @@ class _LoginRightState extends State<LoginRight> {
         ),
       ),
     );
-  }
-
-  Future<void> _saveForm() async {
-    final is_valid =
-        _form.currentState != null ? _form.currentState?.validate() : false;
-    if (is_valid == false) {
-      return;
-    }
-    _form.currentState?.save();
   }
 }

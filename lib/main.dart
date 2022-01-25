@@ -1,4 +1,5 @@
 import 'package:bms_project/screen/login_screen.dart';
+import 'package:bms_project/widgets/location_map.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'providers/users.dart';
@@ -26,7 +27,13 @@ class MyApp extends StatelessWidget {
           primaryColor: Colors.red.shade300,
         ),
         home: const LoginScreen(),
-        routes: {},
+        routes: {
+          LocationMap.route: (ctx) => LocationMap(),
+          // CartScreen.routeName: (ctx) => CartScreen(),
+          // OrdersScreen.routeName: (ctx) => OrdersScreen(),
+          // UserProductsScreen.routeName: (ctx) => UserProductsScreen(),
+          // EditProductScreen.routeName: (ctx) => EditProductScreen(),
+        },
       ),
     );
   }
