@@ -1,4 +1,6 @@
+import 'package:bms_project/modals/user.dart';
 import 'package:bms_project/providers/users.dart';
+import 'package:bms_project/screen/home_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -29,6 +31,19 @@ class _LoginRightState extends State<LoginRight> {
     Widget okButton = ElevatedButton(
       child: Text("OK"),
       onPressed: () {
+        if (flag) {
+          Provider.of<Users>(context, listen: false)
+              .getUserData()
+              .then((value) {
+            // print(value);
+            // print(value.runtimeType);
+            // print(value[0].runtimeType);
+            // print(value[1].runtimeType);
+            // print(value[1]['LONGITUDE'].runtimeType);
+
+            Navigator.of(context).pushNamed(HomePage.route);
+          });
+        }
         Navigator.of(context).pop();
       },
     );
@@ -63,11 +78,8 @@ class _LoginRightState extends State<LoginRight> {
       'password': _password,
     };
     Provider.of<Users>(context, listen: false).signInUser(m).then((value) {
-      print(value);
       if (value[0] == true) {
-        showAlertDialog(context, "signed in", "logged in successfully!",
-                flag: true)
-            .then((_) {});
+        showAlertDialog(context, "signed in", value[1], flag: true);
       } else if (value[0] == false) {
         showAlertDialog(context, "not logged in", value[1]);
       }

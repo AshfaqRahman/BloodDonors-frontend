@@ -4,7 +4,6 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
 
 class LocationMap extends StatefulWidget {
-  static const route = '/map';
   const LocationMap({Key? key}) : super(key: key);
 
   @override

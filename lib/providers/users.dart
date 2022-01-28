@@ -3,11 +3,13 @@ import 'dart:convert';
 import 'package:bms_project/modals/user.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 // import '../models/http_exception.dart';
 // import './product.dart';
 
 class Users with ChangeNotifier {
+  late User user;
   // List<Product> get items {
   //   // if (_showFavoritesOnly) {
   //   //   return _items.where((prodItem) => prodItem.isFavorite).toList();
@@ -71,7 +73,6 @@ class Users with ChangeNotifier {
 
       var code = json.decode(response.body)['code'];
       notifyListeners();
-      print(code);
       if (code == 409 || code == 500) {
         return [false, json.decode(response.body)['message']];
       } else if (code == 201) {
@@ -88,6 +89,7 @@ class Users with ChangeNotifier {
 
   Future<dynamic> signInUser(Map<String, String> userInfo) async {
     var url = 'http://localhost:8080/api/auth/login';
+    SharedPreferences prefs = await SharedPreferences.getInstance();
     final body = json.encode(userInfo);
     try {
       http.Response response = await http.post(Uri.parse(url),
@@ -99,11 +101,54 @@ class Users with ChangeNotifier {
 
       var code = json.decode(response.body)['code'];
       notifyListeners();
-      print(code);
       if (code == 404 || code == 500) {
         return [false, json.decode(response.body)['error']];
       } else if (code == 200) {
-        return [true, json.decode(response.body)['message']];
+        prefs.setString('token', json.decode(response.body)['token']);
+        return [
+          true,
+          json.decode(response.body)['message'],
+        ];
+      } else {
+        return [false, "unknown error"];
+      }
+    } catch (error) {
+      print("error");
+      print(error);
+      return [false, error];
+    }
+  }
+
+  Future<dynamic> getUserData() async {
+    var url = 'http://localhost:8080/api/user/';
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String token = prefs.getString("token") as String;
+    try {
+      http.Response response = await http.get(Uri.parse(url), headers: {
+        'access-control-allow-origin': '*',
+        'content-type': 'application/json',
+        'authorization': token,
+      });
+
+      var code = json.decode(response.body)['code'];
+
+      notifyListeners();
+      if (code == 404 || code == 500) {
+        return [false, json.decode(response.body)['error']];
+      } else if (code == 200) {
+        var data = json.decode(response.body)['data'];
+        user = User(
+          name: data['NAME'],
+          email: data['EMAIL'],
+          phone: data['PHONE_NUMBER'],
+          gender: data['GENDER'],
+          bloodGroup: data['BLOOD_GROUP'],
+          location: {
+            'longitude': data['LONGITUDE'].toString(),
+            'latitude': data['LATITUDE'].toString(),
+          },
+        );
+        return [true, data];
       } else {
         return [false, "unknown error"];
       }

@@ -14,7 +14,7 @@ class User {
     required this.gender,
     required this.bloodGroup,
     required this.location,
-    required this.password,
+    this.password,
   });
 
   Map<String, dynamic> toMap() {
