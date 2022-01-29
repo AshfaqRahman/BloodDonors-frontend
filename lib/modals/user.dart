@@ -1,10 +1,12 @@
+import 'package:bms_project/modals/location.dart';
+
 class User {
   final String name;
   final String email;
   final String phone;
   final String gender;
   final String bloodGroup;
-  final Map<String, String> location;
+  final Location location;
   final password;
 
   User({
@@ -23,7 +25,7 @@ class User {
       'email': email,
       'phone': phone,
       'password': password,
-      'location': location,
+      'location': location.toMap(),
       'bloodGroup': bloodGroup,
       'gender': gender,
     };

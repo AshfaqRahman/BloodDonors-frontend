@@ -1,5 +1,6 @@
 import 'package:bms_project/modals/user.dart';
 import 'package:bms_project/providers/users.dart';
+import 'package:bms_project/widgets/homepage/left_panel.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:universal_html/js.dart';
@@ -31,12 +32,10 @@ class _HomePageState extends State<HomePage> {
     //   this._isInit = false;
     // });
     WidgetsBinding.instance?.addPostFrameCallback((timeStamp) async {
-      print("here");
       users = Provider.of<Users>(ctx, listen: false);
       await users.getUserData();
       var future = Future.delayed(const Duration(milliseconds: 2000), () {
         setState(() {
-          print(users.user.email);
           _isInit = false;
         });
       });
@@ -46,40 +45,43 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     ctx = context;
-    print('building');
-    print(_isInit);
-
-    // final args = ModalRoute.of(context)!.settings.arguments as User;
-    // print(args.toString());
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(users.user.name),
+        title: !_isInit ? Text(users.user.name) : Text(''),
+        automaticallyImplyLeading: false,
       ),
       body: !_isInit
           ? SizedBox(
               width: double.infinity,
               child: Row(
                 children: [
-                  Flexible(
-                    flex: 1,
-                    fit: FlexFit.tight,
+                  Container(
+                    width: MediaQuery.of(context).size.width * .2,
+                    child: Container(
+                      child: LeftPanel(),
+                      decoration: BoxDecoration(color: Colors.amberAccent),
+                    ),
+                  ),
+                  Container(
+                    child: VerticalDivider(
+                      width: MediaQuery.of(context).size.width * .005,
+                    ),
+                  ),
+                  Container(
+                    width: MediaQuery.of(context).size.width * .59,
                     child: Container(
                       child: Text("first part"),
                       decoration: BoxDecoration(color: Colors.amberAccent),
                     ),
                   ),
-                  Flexible(
-                    flex: 2,
-                    fit: FlexFit.tight,
-                    child: Container(
-                      child: Text("first part"),
-                      decoration: BoxDecoration(color: Colors.amberAccent),
+                  Container(
+                    child: VerticalDivider(
+                      width: MediaQuery.of(context).size.width * .005,
                     ),
                   ),
-                  Flexible(
-                    flex: 1,
-                    fit: FlexFit.tight,
+                  Container(
+                    width: MediaQuery.of(context).size.width * .2,
                     child: Container(
                       child: Text("first part"),
                       decoration: BoxDecoration(color: Colors.amberAccent),

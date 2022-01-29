@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:bms_project/modals/location.dart';
 import 'package:bms_project/modals/user.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -63,6 +64,7 @@ class Users with ChangeNotifier {
   Future<dynamic> signUpUser(User user) async {
     var url = 'http://localhost:8080/api/auth/register';
     final body = json.encode(user.toMap());
+    print(body);
     try {
       http.Response response = await http.post(Uri.parse(url),
           body: body,
@@ -91,13 +93,16 @@ class Users with ChangeNotifier {
     var url = 'http://localhost:8080/api/auth/login';
     SharedPreferences prefs = await SharedPreferences.getInstance();
     final body = json.encode(userInfo);
+    print(body);
     try {
+      print('here');
       http.Response response = await http.post(Uri.parse(url),
           body: body,
           headers: {
             'access-control-allow-origin': '*',
             'content-type': 'application/json'
           });
+      print(response);
 
       var code = json.decode(response.body)['code'];
       notifyListeners();
@@ -120,7 +125,8 @@ class Users with ChangeNotifier {
   }
 
   Future<dynamic> getUserData() async {
-    var url = 'http://localhost:8080/api/user/';
+    print("inside getUserData");
+    var url = 'http://localhost:8080/api/user/me';
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String token = prefs.getString("token") as String;
     try {
@@ -131,6 +137,7 @@ class Users with ChangeNotifier {
       });
 
       var code = json.decode(response.body)['code'];
+      print(json.decode(response.body)['data']);
 
       notifyListeners();
       if (code == 404 || code == 500) {
@@ -143,11 +150,16 @@ class Users with ChangeNotifier {
           phone: data['PHONE_NUMBER'],
           gender: data['GENDER'],
           bloodGroup: data['BLOOD_GROUP'],
-          location: {
-            'longitude': data['LONGITUDE'].toString(),
-            'latitude': data['LATITUDE'].toString(),
-          },
+          location: Location(
+            description: data['LOCATION']['DESCRIPTION'],
+            latitude: data['LOCATION']['LONGITUDE'],
+            longitude: data['LOCATION']['LATITUDE'],
+          ),
         );
+        print("user init");
+        print("user name : ${user.name}");
+        print("ok");
+        // print(user);
         return [true, data];
       } else {
         return [false, "unknown error"];
