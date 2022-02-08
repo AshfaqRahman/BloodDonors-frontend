@@ -136,7 +136,7 @@ class _SignUpFormState extends State<SignUpForm> {
 
     _initValues['blood group'] = _selectedBloodGroup;
     final is_valid =
-        _form.currentState != null ? _form.currentState?.validate() : false;
+        _form.currentState != null ? _form.currentState!.validate() : false;
     if (is_valid == false) {
       return;
     }
@@ -151,18 +151,18 @@ class _SignUpFormState extends State<SignUpForm> {
         location: Location.fromMap(_initValues['location']),
         password: _initValues['password'],
         bloodGroup: _initValues['blood group']);
-    print("printing user input.");
-    print(x.toMap());
+    // print("printing user input.");
+    // print(x.toMap());
     Provider.of<Users>(context, listen: false).signUpUser(x).then((value) {
-      if (value[0] == true) {
+      if (value['success'] == true) {
         showAlertDialog(context, "signed up", "you registered successfully!",
                 flag: true)
             .then((_) {
           // print("here");
           // widget.switching();
         });
-      } else if (value[0] == false) {
-        showAlertDialog(context, "not signed up", value[1]);
+      } else if (value['success'] == false) {
+        showAlertDialog(context, "not signed up", value["message"]);
       }
     }).catchError((_) {
       showAlertDialog(context, "server problem", "you got a problem!");

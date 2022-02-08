@@ -18,9 +18,8 @@ class _InputLocationState extends State<InputLocation> {
   OsmLocation? selectedLocation;
   bool _foundLocation = false;
 
-  void _openMapDialog(
-      double lat, double lng, double zoom) async {
-    print("inside _openMapDialog");
+  void _openMapDialog(double lat, double lng, double zoom) async {
+    // print("inside _openMapDialog");
     double width = MediaQuery.of(context).size.width;
     double height = MediaQuery.of(context).size.height;
     OsmLocation location = await showDialog(
@@ -50,11 +49,11 @@ class _InputLocationState extends State<InputLocation> {
   }
 
   void showMapDialog() {
-    print("inside showMapDialog");
+    // print("inside showMapDialog");
     determinePosition().then((Position position) async {
       double lat = position.latitude;
       double lng = position.longitude;
-      print("showMapDialog: userlocation($lat, $lng)");
+      // print("showMapDialog: userlocation($lat, $lng)");
       _openMapDialog(lat, lng, 16);
     }).onError((error, stackTrace) {
       print("Error getting user location! Error: $error");

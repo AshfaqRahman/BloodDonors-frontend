@@ -40,7 +40,7 @@ class _OsmInputMapWiddgetState extends State<OsmInputMapWiddget> {
       double lat = location.latitude;
       double lng = location.longitude;
       String displayName = location.displayName;
-      print("_OsmInputMapWiddgetState: display name : $displayName");
+      // print("_OsmInputMapWiddgetState: display name : $displayName");
       _selectedLatLng = LatLng(lat, lng);
       _selectedLocation = location;
       stMap?.redraw(_selectedLatLng, 16);
@@ -71,7 +71,7 @@ class _OsmInputMapWiddgetState extends State<OsmInputMapWiddget> {
   Widget build(BuildContext context) {
     double width = MediaQuery.of(context).size.width;
     double height = MediaQuery.of(context).size.height;
-    print("OsmInputMapWiddget(w: $width, h: $height)");
+    // print("OsmInputMapWiddget(w: $width, h: $height)");
     return Scaffold(
       floatingActionButton: FloatingActionButton(
         child: Icon(Icons.where_to_vote, color: Colors.white),
@@ -301,7 +301,7 @@ class OsmInputMap {
   // https://medium.com/zipper-studios/flutter-map-custom-and-dynamic-popup-over-the-marker-732d26ef9bc7
   // https://stackoverflow.com/questions/61155942/flutter-map-move-camera-with-map-controller-through-bloc
   FlutterMap getFlutterMap(lat, lng, z) {
-    print("getFlutterMap(): drawing map at $lat, $lng, zoom: $z");
+    // print("getFlutterMap(): drawing map at $lat, $lng, zoom: $z");
     _markers.clear();
     _markers.add(makeMarker(lat, lng));
     _mapController.onReady

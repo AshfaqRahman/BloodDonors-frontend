@@ -7,7 +7,7 @@ class OsmLocation {
   OsmLocation(
       {required this.latitude,
       required this.longitude,
-      required this.displayName, 
+      required this.displayName,
       required this.type});
 
   @override
@@ -20,7 +20,6 @@ class OsmLocation {
       'latitude': latitude,
       'longitude': longitude,
       'displayName': displayName,
-      'icon' : type,
     };
   }
 }

@@ -40,14 +40,31 @@ class _LeftPanelState extends State<LeftPanel> {
     buttons = [
       {
         'text': 'Create blood post',
-        'onPress': () {
-          showDialog(
-              context: widget.context,
-              builder: (BuildContext context) {
-                return AlertDialog(
-                  content: CreatePost(),
-                );
-              });
+        'onPress': () async {
+          var result = await showDialog(
+            context: widget.context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                content: CreatePost(),
+              );
+            },
+          );
+          print("after popping ${result}");
+          ScaffoldMessenger.of(widget.context).showSnackBar(
+            SnackBar(
+              // width: MediaQuery.of(context).size.width * 0.2,
+              margin: EdgeInsets.only(
+                  left: MediaQuery.of(context).size.width * 0.7,
+                  right: 20,
+                  bottom: 20),
+              behavior: SnackBarBehavior.floating,
+              content: Text('Text label'),
+              action: SnackBarAction(
+                label: 'Action',
+                onPressed: () {},
+              ),
+            ),
+          );
         }
       },
       {'text': 'Add donation', 'onPress': () {}},
@@ -216,7 +233,7 @@ class UserWidget extends StatelessWidget {
             future: parseUserNameFromToken(),
             builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
               return Text(
-                snapshot.data??"",
+                snapshot.data ?? "",
                 style: Theme.of(context).textTheme.headline6?.copyWith(
                     fontWeight: FontWeight.bold, color: userNameTextColor),
               );

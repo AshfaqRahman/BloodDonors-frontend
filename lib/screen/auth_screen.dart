@@ -37,13 +37,14 @@ class AuthScreen extends StatelessWidget {
                   height: height * 0.05,
                 ),
                 const Center(
-                    child: FittedBox(
-                  child: Text(
-                    "©2022 BloodDonors\nCreated by Hasan Masum and Ashfaq Rahman ",
-                    textAlign: TextAlign.center,
-                    style: TextStyle(color: Colors.white70),
+                  child: FittedBox(
+                    child: Text(
+                      "©2022 BloodDonors\nCreated by Hasan Masum and Ashfaq Rahman ",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: Colors.white70),
+                    ),
                   ),
-                ))
+                )
               ],
             )),
       ),

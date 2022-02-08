@@ -32,7 +32,6 @@ class _LoginInnerState extends State<LoginInner> {
       // crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Container(
-
             // color: Colors.green,
             width: MediaQuery.of(context).size.width * 0.285,
             child: const LoginLeft()),
@@ -40,10 +39,8 @@ class _LoginInnerState extends State<LoginInner> {
           //color: Colors.amber,
           width: MediaQuery.of(context).size.width * 0.285,
           child: loginPage
-              ?
-              LoginForm(switchToSignUpPage)
-          : SignUpForm(switchToLoginPage)
-          ,
+              ? LoginForm(switchToSignUpPage)
+              : SignUpForm(switchToLoginPage),
         ),
       ],
     );

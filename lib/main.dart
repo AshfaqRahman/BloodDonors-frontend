@@ -1,3 +1,4 @@
+import 'package:bms_project/providers/blood_post.dart';
 import 'package:bms_project/screen/home_screen.dart';
 import 'package:bms_project/screen/auth_screen.dart';
 import 'package:flutter/material.dart';
@@ -8,7 +9,7 @@ import 'providers/users.dart';
 
 Future<void> main() async {
   await dotenv.load(fileName: ".env");
-  print(dotenv.env['API_URL']);
+  // print(dotenv.env['API_URL']);
   runApp(const MyApp());
 }
 
@@ -23,15 +24,18 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider.value(
           value: Users(),
         ),
+        ChangeNotifierProvider.value(
+          value: BloodPost(),
+        ),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
         title: 'blood management system',
         theme: _buildTheme(),
-        home: AuthScreen(),
+        home: const AuthScreen(),
         routes: {
           HomeScreen.route: (ctx) => HomeScreen(),
-          AuthScreen.route: (context) => const AuthScreen()
+          AuthScreen.route: (context) => const AuthScreen(),
         },
       ),
     );

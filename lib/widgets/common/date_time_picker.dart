@@ -5,7 +5,11 @@ import 'package:intl/intl.dart';
 
 // https://enappd.com/blog/building-a-flutter-datetime-picker/55/
 class DateTimePicker extends StatefulWidget {
-  const DateTimePicker({Key? key}) : super(key: key);
+  final Function timeCallback;
+  final Function dateCallback;
+  const DateTimePicker(
+      {required this.dateCallback, required this.timeCallback, Key? key})
+      : super(key: key);
 
   @override
   _DateTimePickerState createState() => _DateTimePickerState();
@@ -46,10 +50,10 @@ class _DateTimePickerState extends State<DateTimePicker> {
     return SizedBox(
       width: width * 0.3,
       child: Row(
-        children: const [
-          Flexible(flex: 1, child: DateInput()),
+        children: [
+          Flexible(flex: 1, child: DateInput(widget.dateCallback)),
           HorizontalSpacing(10),
-          Flexible(flex: 1, child: TimeInput()),
+          Flexible(flex: 1, child: TimeInput(widget.timeCallback)),
         ],
       ),
     );
@@ -57,7 +61,8 @@ class _DateTimePickerState extends State<DateTimePicker> {
 }
 
 class TimeInput extends StatefulWidget {
-  const TimeInput({Key? key}) : super(key: key);
+  final Function timeCallback;
+  const TimeInput(this.timeCallback, {Key? key}) : super(key: key);
 
   @override
   _TimeInputState createState() => _TimeInputState();
@@ -73,8 +78,9 @@ class _TimeInputState extends State<TimeInput> {
     // TODO: implement initState
     //var format = DateFormat.jm();
     // DateFormat dateFormat = DateFormat("yyyy-MM-dd");
-    timeString = "${DateTime.now().hour} : ${DateTime.now().minute}";
-    print(timeString);
+    timeString = "${DateTime.now().hour}:${DateTime.now().minute}";
+    // widget.timeCallback(timeString);
+    // print(timeString);
     super.initState();
   }
 
@@ -87,7 +93,8 @@ class _TimeInputState extends State<TimeInput> {
     // print("${newTime!.hour} ${newTime.minute}");
 
     setState(() {
-      timeString = "${newTime!.hour} : ${newTime.minute}";
+      timeString = "${newTime!.hour}:${newTime.minute}";
+      widget.timeCallback(timeString);
       print(timeString);
     });
   }
@@ -143,7 +150,8 @@ class _TimeInputState extends State<TimeInput> {
 }
 
 class DateInput extends StatefulWidget {
-  const DateInput({Key? key}) : super(key: key);
+  final Function dateCallback;
+  const DateInput(this.dateCallback, {Key? key}) : super(key: key);
 
   @override
   _DateInputState createState() => _DateInputState();
@@ -159,9 +167,11 @@ class _DateInputState extends State<DateInput> {
     DateFormat dateFormat = DateFormat("yyyy-MM-dd");
     dateString = dateFormat.format(DateTime.now());
     print(dateString);
+    // widget.dateCallback(dateString);
     super.initState();
   }
 
+  @override
   void openDatePickerDialog() async {
     DateTime? newDate = await showDatePicker(
       context: context,
@@ -175,6 +185,7 @@ class _DateInputState extends State<DateInput> {
     setState(() {
       DateFormat dateFormat = DateFormat("yyyy-MM-dd");
       dateString = dateFormat.format(newDate!);
+      widget.dateCallback(dateString);
       print(dateString);
     });
   }

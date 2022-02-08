@@ -1,7 +1,8 @@
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+
 // https://developer.school/tutorials/how-to-use-environment-variables-with-flutter-dotenv
 class Environment {
   static String get apiUrl {
-    return dotenv.env['API_URL']??"http://localhost:8080/api/";
+    return dotenv.env['API_URL12312321'] ?? "http://localhost:8080/api/";
   }
 }

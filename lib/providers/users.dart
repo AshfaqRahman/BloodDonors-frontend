@@ -12,60 +12,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class Users with ChangeNotifier {
   late User user;
-  // List<Product> get items {
-  //   // if (_showFavoritesOnly) {
-  //   //   return _items.where((prodItem) => prodItem.isFavorite).toList();
-  //   // }
-  //   return [..._items];
-  // }
-
-  // List<Product> get favoriteItems {
-  //   return _items.where((prodItem) => prodItem.isFavorite).toList();
-  // }
-
-  // Product findById(String id) {
-  //   return _items.firstWhere((prod) => prod.id == id);
-  // }
-
-  // // void showFavoritesOnly() {
-  // //   _showFavoritesOnly = true;
-  // //   notifyListeners();
-  // // }
-
-  // // void showAll() {
-  // //   _showFavoritesOnly = false;
-  // //   notifyListeners();
-  // // }
-
-  // Future<void> fetchAndSetProducts() async {
-  //   final url = Uri.https('flutter-update.firebaseio.com', '/products.json');
-  //   try {
-  //     final response = await http.get(url);
-  //     final extractedData = json.decode(response.body) as Map<String, dynamic>;
-  //     if (extractedData == null) {
-  //       return;
-  //     }
-  //     final List<Product> loadedProducts = [];
-  //     extractedData.forEach((prodId, prodData) {
-  //       loadedProducts.add(Product(
-  //         id: prodId,
-  //         title: prodData['title'],
-  //         description: prodData['description'],
-  //         price: prodData['price'],
-  //         isFavorite: prodData['isFavorite'],
-  //         imageUrl: prodData['imageUrl'],
-  //       ));
-  //     });
-  //     _items = loadedProducts;
-  //     notifyListeners();
-  //   } catch (error) {
-  //     throw (error);
-  //   }
-  // }
   Future<dynamic> signUpUser(User user) async {
     var url = '${Environment.apiUrl}/auth/register';
     final body = json.encode(user.toMap());
-    print(body);
     try {
       http.Response response = await http.post(Uri.parse(url),
           body: body,
@@ -73,15 +22,23 @@ class Users with ChangeNotifier {
             'access-control-allow-origin': '*',
             'content-type': 'application/json'
           });
-
-      var code = json.decode(response.body)['code'];
+      var data = json.decode(response.body);
       notifyListeners();
-      if (code == 409 || code == 500) {
-        return [false, json.decode(response.body)['message']];
-      } else if (code == 201) {
-        return [true];
+      if (data['code'] == 409 || data['code'] == 500) {
+        return {
+          'success': false,
+          'message': data['message'],
+        };
+      } else if (data['code'] == 201) {
+        return {
+          'success': true,
+          'message': 'successfully registered',
+        };
       } else {
-        return [false, "unknown error"];
+        return {
+          'success': false,
+          'message': 'unknown number',
+        };
       }
     } catch (error) {
       print("error");
@@ -138,7 +95,7 @@ class Users with ChangeNotifier {
   }
 
   Future<dynamic> getUserData() async {
-    print("inside getUserData");
+    // print("inside getUserData");
     var url = '${Environment.apiUrl}/user/me';
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String token = prefs.getString("token") as String;
