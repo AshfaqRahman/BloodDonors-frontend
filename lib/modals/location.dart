@@ -1,5 +1,3 @@
-import 'package:bms_project/widgets/location_map.dart';
-
 class Location {
   String description;
   double latitude;
@@ -17,5 +15,12 @@ class Location {
       'latitude': latitude,
       'longitude': longitude,
     };
+  }
+
+  static Location fromMap(Map map) {
+    return Location(
+        description: map['description'],
+        latitude: map['latitude'],
+        longitude: map['longitude']);
   }
 }

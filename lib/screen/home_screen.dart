@@ -1,22 +1,25 @@
 import 'package:bms_project/modals/user.dart';
 import 'package:bms_project/providers/users.dart';
 import 'package:bms_project/widgets/homepage/left_panel.dart';
+import 'package:bms_project/widgets/homepage/mid_panel.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:universal_html/js.dart';
 
-class HomePage extends StatefulWidget {
+class HomeScreen extends StatefulWidget {
   static const route = '/home';
-  HomePage({Key? key}) : super(key: key);
+  HomeScreen({Key? key}) : super(key: key);
 
   @override
-  _HomePageState createState() => _HomePageState();
+  _HomeScreenState createState() => _HomeScreenState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _HomeScreenState extends State<HomeScreen> {
   late BuildContext ctx;
   var _isInit = true;
   var users;
+
+  LeftPanelOption midPanelIndex = LeftPanelOption.HOME;
 
   @override
   void initState() {
@@ -31,27 +34,37 @@ class _HomePageState extends State<HomePage> {
     //   print(users.user);
     //   this._isInit = false;
     // });
-    WidgetsBinding.instance?.addPostFrameCallback((timeStamp) async {
-      users = Provider.of<Users>(ctx, listen: false);
-      await users.getUserData();
-      var future = Future.delayed(const Duration(milliseconds: 2000), () {
-        setState(() {
-          _isInit = false;
-        });
-      });
+    // WidgetsBinding.instance?.addPostFrameCallback((timeStamp) async {
+    //   users = Provider.of<Users>(ctx, listen: false);
+    //   await users.getUserData();
+    //   var future = Future.delayed(const Duration(milliseconds: 2000), () {
+    //     setState(() {
+    //       _isInit = false;
+    //     });
+    //   });
+    // });
+  }
+
+  _switchMidPanelIndex(LeftPanelOption option) {
+    setState(() {
+      midPanelIndex = option;
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    ctx = context;
+    // ctx = context;
 
     return Scaffold(
       appBar: AppBar(
-        title: !_isInit ? Text(users.user.name) : Text(''),
+        title: Text("Blood Donors",
+            style: Theme.of(context)
+                .textTheme
+                .headline5
+                ?.copyWith(fontWeight: FontWeight.bold, color: Colors.white)),
         automaticallyImplyLeading: false,
       ),
-      body: !_isInit
+      body: !_isInit || true
           ? SizedBox(
               width: double.infinity,
               child: Row(
@@ -59,7 +72,7 @@ class _HomePageState extends State<HomePage> {
                   Container(
                     width: MediaQuery.of(context).size.width * .2,
                     child: Container(
-                      child: LeftPanel(),
+                      child: LeftPanel(context, _switchMidPanelIndex),
                       decoration: BoxDecoration(color: Colors.amberAccent),
                     ),
                   ),
@@ -71,7 +84,7 @@ class _HomePageState extends State<HomePage> {
                   Container(
                     width: MediaQuery.of(context).size.width * .59,
                     child: Container(
-                      child: Text("first part"),
+                      child: MidPanel(midPanelIndex),
                       decoration: BoxDecoration(color: Colors.amberAccent),
                     ),
                   ),

@@ -196,7 +196,7 @@ class _LocationMapState extends State<LocationMap> {
           // print(_controller.isCompleted);
           Navigator.pop(context, selectedLocation);
           // print("after popping");
-          return;
+          //return;
         },
       ),
     );
