@@ -1,12 +1,14 @@
 import 'package:bms_project/screen/home_screen.dart';
 import 'package:bms_project/screen/auth_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'providers/users.dart';
 
-// https://developer.school/tutorials/how-to-use-environment-variables-with-flutter-dotenv
-void main() {
+Future<void> main() async {
+  await dotenv.load(fileName: ".env");
+  print(dotenv.env['API_URL']);
   runApp(const MyApp());
 }
 
@@ -26,7 +28,7 @@ class MyApp extends StatelessWidget {
         debugShowCheckedModeBanner: false,
         title: 'blood management system',
         theme: _buildTheme(),
-        home: HomeScreen(),
+        home: AuthScreen(),
         routes: {
           HomeScreen.route: (ctx) => HomeScreen(),
           AuthScreen.route: (context) => const AuthScreen()

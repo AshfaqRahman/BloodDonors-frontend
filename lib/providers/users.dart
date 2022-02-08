@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:bms_project/modals/location.dart';
 import 'package:bms_project/modals/user.dart';
+import 'package:bms_project/utils/environment.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -62,7 +63,7 @@ class Users with ChangeNotifier {
   //   }
   // }
   Future<dynamic> signUpUser(User user) async {
-    var url = 'http://localhost:8080/api/auth/register';
+    var url = '${Environment.apiUrl}/auth/register';
     final body = json.encode(user.toMap());
     print(body);
     try {
@@ -90,43 +91,55 @@ class Users with ChangeNotifier {
   }
 
   Future<dynamic> signInUser(Map<String, String> userInfo) async {
-    var url = 'http://localhost:8080/api/auth/login';
+    var url = '${Environment.apiUrl}/auth/login';
+    print("requesting in $url");
     SharedPreferences prefs = await SharedPreferences.getInstance();
     final body = json.encode(userInfo);
+    print("Provider.signInUser():");
     print(body);
     try {
-      print('here');
+      print("yo");
       http.Response response = await http.post(Uri.parse(url),
           body: body,
           headers: {
             'access-control-allow-origin': '*',
             'content-type': 'application/json'
           });
-      print(response);
-
-      var code = json.decode(response.body)['code'];
+      print("yo2");
+      var data = json.decode(response.body);
+      print(data);
+      var code = data['code'];
       notifyListeners();
       if (code == 404 || code == 500) {
-        return [false, json.decode(response.body)['error']];
+        return {
+          'success': false,
+          'message': data['message'],
+        };
       } else if (code == 200) {
-        prefs.setString('token', json.decode(response.body)['token']);
-        return [
-          true,
-          json.decode(response.body)['message'],
-        ];
+        prefs.setString('token', data['token']);
+        return {
+          'success': true,
+          'message': data['message'],
+        };
       } else {
-        return [false, "unknown error"];
+        return {
+          'success': false,
+          'message': 'unknown error',
+        };
       }
     } catch (error) {
-      print("error");
+      print("sign in user: error");
       print(error);
-      return [false, error];
+      return {
+        'success': false,
+        'message': error,
+      };
     }
   }
 
   Future<dynamic> getUserData() async {
     print("inside getUserData");
-    var url = 'http://localhost:8080/api/user/me';
+    var url = '${Environment.apiUrl}/user/me';
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String token = prefs.getString("token") as String;
     try {

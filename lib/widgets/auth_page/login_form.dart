@@ -17,6 +17,7 @@ class LoginForm extends StatefulWidget {
 }
 
 class _LoginFormState extends State<LoginForm> {
+  final String TAG = 'LoginForm';
   final FocusNode _passwordFocusNode = FocusNode();
 
   final _form = GlobalKey<FormState>();
@@ -70,28 +71,33 @@ class _LoginFormState extends State<LoginForm> {
   }
 
   Future<void> _saveForm() async {
-    Navigator.of(context).pushNamed(HomeScreen.route);
-    return; // for testin
+    /* Navigator.of(context).pushNamed(HomeScreen.route);
+    return;  */ // for testin
 
-    final is_valid =
-        _form.currentState != null ? _form.currentState!.validate() : false;
-    if (is_valid == false) {
+    final isValid =
+        _form.currentState != null && _form.currentState!.validate();
+    if (isValid == false) {
       return;
     }
-    _form.currentState?.save();
+
+    _form.currentState!.save();
     if (_email == null || _password == null) return;
     Map<String, String> m = {
       'email': _email!,
       'password': _password!,
     };
+
+    print('$TAG : m');
+
     Provider.of<Users>(context, listen: false).signInUser(m).then((value) {
-      if (value[0] == true) {
-        showAlertDialog(context, "signed in", value[1], flag: true);
-      } else if (value[0] == false) {
-        showAlertDialog(context, "not logged in", value[1]);
+      if (value['success'] == true) {
+        //showAlertDialog(context, "signed in", value[1], flag: true);
+        Navigator.of(context).pushNamed(HomeScreen.route);
+      } else if (value['success'] == false) {
+        showAlertDialog(context, "login failed", value[1]);
       }
     }).catchError((_) {
-      showAlertDialog(context, "server problem", "you got a problem!");
+      showAlertDialog(context, "login failed", "you got a problem!");
     });
   }
 

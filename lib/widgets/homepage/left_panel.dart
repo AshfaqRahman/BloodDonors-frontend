@@ -2,6 +2,8 @@ import 'package:bms_project/widgets/common/margin.dart';
 import 'package:bms_project/widgets/homepage/left_panel/create_post.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:jwt_decoder/jwt_decoder.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../screen/auth_screen.dart';
 
@@ -210,13 +212,25 @@ class UserWidget extends StatelessWidget {
             ),
           ),
           const HorizontalSpacing(20),
-          Text(
-            "Hasan Masum",
-            style: Theme.of(context).textTheme.headline6?.copyWith(
-                fontWeight: FontWeight.bold, color: userNameTextColor),
+          FutureBuilder(
+            future: parseUserNameFromToken(),
+            builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
+              return Text(
+                snapshot.data??"",
+                style: Theme.of(context).textTheme.headline6?.copyWith(
+                    fontWeight: FontWeight.bold, color: userNameTextColor),
+              );
+            },
           )
         ]),
       ),
     );
+  }
+
+  Future<String> parseUserNameFromToken() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String token = prefs.getString("token") ?? '';
+    Map<String, dynamic> decodedToken = JwtDecoder.decode(token);
+    return decodedToken['NAME'] ?? "";
   }
 }
