@@ -1,6 +1,7 @@
 import 'package:bms_project/providers/blood_post.dart';
 import 'package:bms_project/screen/home_screen.dart';
 import 'package:bms_project/screen/auth_screen.dart';
+import 'package:bms_project/screen/post_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -36,6 +37,7 @@ class MyApp extends StatelessWidget {
         routes: {
           HomeScreen.route: (ctx) => HomeScreen(),
           AuthScreen.route: (context) => const AuthScreen(),
+          BloodPostScreen.route: (context) => BloodPostScreen(),
         },
       ),
     );

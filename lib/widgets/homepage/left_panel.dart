@@ -1,3 +1,4 @@
+import 'package:bms_project/screen/post_screen.dart';
 import 'package:bms_project/widgets/common/margin.dart';
 import 'package:bms_project/widgets/homepage/left_panel/create_post.dart';
 import 'package:flutter/material.dart';
@@ -58,11 +59,16 @@ class _LeftPanelState extends State<LeftPanel> {
                   right: 20,
                   bottom: 20),
               behavior: SnackBarBehavior.floating,
-              content: Text('Text label'),
-              action: SnackBarAction(
-                label: 'Action',
-                onPressed: () {},
-              ),
+              content: Text(result['message']),
+              action: (result['data'] != null)
+                  ? SnackBarAction(
+                      label: 'Show',
+                      onPressed: () {
+                        Navigator.of(context).pushNamed(BloodPostScreen.route,
+                            arguments: result['data']);
+                      },
+                    )
+                  : null,
             ),
           );
         }
@@ -248,6 +254,6 @@ class UserWidget extends StatelessWidget {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String token = prefs.getString("token") ?? '';
     Map<String, dynamic> decodedToken = JwtDecoder.decode(token);
-    return decodedToken['NAME'] ?? "";
+    return decodedToken['name'] ?? "";
   }
 }

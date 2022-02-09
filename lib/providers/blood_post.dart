@@ -20,13 +20,17 @@ class BloodPost with ChangeNotifier {
         'content-type': 'application/json',
         'authorization': token,
       });
+      print("response body");
+      print(response.body);
       var data = json.decode(response.body);
-      print(data);
+      //print(data);
       notifyListeners();
       if (data['code'] == 201) {
+        print("ok code 201 post created.");
         return {
           'success': true,
           'message': data['message'],
+          'data': bp.BloodPostResponse.toBloodPostResponse(data['data']),
         };
       } else {
         return {
@@ -37,7 +41,10 @@ class BloodPost with ChangeNotifier {
     } catch (error) {
       print("error");
       print(error);
-      return [false, error];
+      return {
+        'success': false,
+        'message': error,
+      };
     }
   }
 }

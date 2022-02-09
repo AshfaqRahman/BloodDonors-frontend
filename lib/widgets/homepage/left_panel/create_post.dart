@@ -94,7 +94,7 @@ class _CreatePostState extends State<CreatePost> {
     Provider.of<provide.BloodPost>(ctx, listen: false)
         .createPost(bloodPost)
         .then((value) {
-      Navigator.of(ctx).pop(value['message']);
+      Navigator.of(ctx).pop(value);
     });
   }
 
