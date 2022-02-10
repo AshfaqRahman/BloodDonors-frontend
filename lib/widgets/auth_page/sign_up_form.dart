@@ -124,9 +124,9 @@ class _SignUpFormState extends State<SignUpForm> {
       _initValues['location']['latitude'] = _userLatLng.latitude;
       _initValues['location']['longitude'] = _userLatLng.longitude;
       if (_userLocationText != null) {
-        _initValues['location']['description'] = _userLocationText;
+        _initValues['location']['display_name'] = _userLocationText;
       } else {
-        _initValues['location']['description'] =
+        _initValues['location']['display_name'] =
             "Unkown(${_userLatLng.latitude}, ${_userLatLng.longitude})";
       }
     } else {

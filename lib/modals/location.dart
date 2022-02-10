@@ -11,7 +11,7 @@ class Location {
 
   Map<String, dynamic> toMap() {
     return {
-      'description': description,
+      'display_name': description,
       'latitude': latitude,
       'longitude': longitude,
     };
@@ -19,7 +19,7 @@ class Location {
 
   static Location fromMap(Map map) {
     return Location(
-        description: map['description'],
+        description: map['display_name'],
         latitude: map['latitude'],
         longitude: map['longitude']);
   }

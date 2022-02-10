@@ -1,9 +1,15 @@
-import 'package:bms_project/screen/post_screen.dart';
+import 'dart:convert';
+
+import 'package:bms_project/modals/blood_post_model.dart';
+import 'package:bms_project/providers/blood_post_provider.dart';
+import 'package:bms_project/screen/blood_post_view_screen.dart';
+import 'package:bms_project/utils/dummy.dart';
 import 'package:bms_project/widgets/common/margin.dart';
 import 'package:bms_project/widgets/homepage/left_panel/create_post.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../screen/auth_screen.dart';
@@ -73,7 +79,23 @@ class _LeftPanelState extends State<LeftPanel> {
           );
         }
       },
-      {'text': 'Add donation', 'onPress': () {}},
+      {
+        'text': 'Add donation',
+        'onPress': () {
+          /* Provider.of<BloodPostProvider>(widget.context, listen: false)
+              .getPost(DummyConstants.dummyPostId)
+              .then((value) {
+            if (value['success']) {
+              print("data recieved: $value['data']");
+              Navigator.of(context)
+                  .pushNamed(BloodPostScreen.route, arguments: value['data']);
+            }
+          }); */
+          BloodPost data = BloodPost.fromJson(json.decode(DummyConstants.postData));
+          Navigator.of(context)
+              .pushNamed(BloodPostScreen.route, arguments: data);
+        }
+      },
     ];
     super.initState();
   }

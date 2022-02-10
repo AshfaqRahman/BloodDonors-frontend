@@ -144,7 +144,7 @@ class _OsmInputMapWiddgetState extends State<OsmInputMapWiddget> {
                                             });
                                             stMap?.redraw(_selectedLatLng, 16);
                                           },
-                                          leading: _iconFromType(item.type),
+                                          leading: _iconFromType(item.type??""),
                                           title: Text(item.displayName),
                                           subtitle: Text(
                                               "${item.latitude}, ${item.longitude}"),

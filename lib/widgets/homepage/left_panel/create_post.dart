@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'dart:html';
 
-import 'package:bms_project/modals/blood_post.dart';
-import 'package:bms_project/providers/blood_post.dart' as provide;
+import 'package:bms_project/modals/blood_post_model.dart';
+import 'package:bms_project/providers/blood_post_provider.dart' as provide;
 import 'package:bms_project/modals/location.dart';
 import 'package:bms_project/modals/osm_model.dart';
 import 'package:bms_project/widgets/common/blood_group_selection.dart';
@@ -81,7 +81,7 @@ class _CreatePostState extends State<CreatePost> {
     _form.currentState?.save();
     print(
         '${_dueDate ?? ""}, $_dueTime, $_amount, $_contactNumber, $_selectedBG, $_selectedLocation');
-    BloodPost bloodPost = BloodPost(
+    BloodPostUserInput bloodPost = BloodPostUserInput(
       dueTime: '${_dueDate} ${_dueTime}:00',
       amount: _amount!,
       contact: _contactNumber!,
@@ -91,7 +91,7 @@ class _CreatePostState extends State<CreatePost> {
     );
 
     print(json.encode(bloodPost.toMap()));
-    Provider.of<provide.BloodPost>(ctx, listen: false)
+    Provider.of<provide.BloodPostProvider>(ctx, listen: false)
         .createPost(bloodPost)
         .then((value) {
       Navigator.of(ctx).pop(value);

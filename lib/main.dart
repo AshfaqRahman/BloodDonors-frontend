@@ -1,12 +1,18 @@
-import 'package:bms_project/providers/blood_post.dart';
+import 'package:bms_project/providers/blood_post_provider.dart';
 import 'package:bms_project/screen/home_screen.dart';
 import 'package:bms_project/screen/auth_screen.dart';
-import 'package:bms_project/screen/post_screen.dart';
+import 'package:bms_project/screen/blood_post_view_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_native_timezone/flutter_native_timezone.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:universal_html/html.dart';
+import 'package:universal_html/js.dart';
 import 'providers/users.dart';
+import 'dart:ui' as ui;
+import 'dart:io' show Platform;
 
 Future<void> main() async {
   await dotenv.load(fileName: ".env");
@@ -20,20 +26,21 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
+    //FlutterNativeTimezone.getLocalTimezone().then((value) => print("locale: ${value}"));
     return MultiProvider(
       providers: [
         ChangeNotifierProvider.value(
           value: Users(),
         ),
         ChangeNotifierProvider.value(
-          value: BloodPost(),
+          value: BloodPostProvider(),
         ),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
         title: 'blood management system',
         theme: _buildTheme(),
-        home: const AuthScreen(),
+        home: const BloodPostScreen(),
         routes: {
           HomeScreen.route: (ctx) => HomeScreen(),
           AuthScreen.route: (context) => const AuthScreen(),

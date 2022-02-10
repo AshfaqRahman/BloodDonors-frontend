@@ -18,3 +18,6 @@ samples, guidance on mobile development, and a full API reference.
 
 // resolve xmlhttprequest
 https://stackoverflow.com/questions/67253808/xmlhttprequest-error-while-using-http-post-flutter-web
+
+// json to dart
+https://app.quicktype.io/

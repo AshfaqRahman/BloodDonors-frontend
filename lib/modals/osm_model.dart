@@ -1,14 +1,41 @@
 class OsmLocation {
-  final double latitude;
-  final double longitude;
-  final String displayName;
-  final String type;
+  OsmLocation({
+    this.id,
+    required this.latitude,
+    required this.longitude,
+    required this.displayName,
+    this.type
+  });
 
-  OsmLocation(
-      {required this.latitude,
-      required this.longitude,
-      required this.displayName,
-      required this.type});
+  String? id;
+  double latitude;
+  double longitude;
+  String displayName;
+  String? type;
+
+  OsmLocation.fromOsm({
+    required this.latitude,
+    required this.longitude,
+    required this.displayName,
+  });
+
+  factory OsmLocation.fromJson(Map<String, dynamic> json) {
+    return OsmLocation(
+      id: json["id"],
+      latitude: json["latitude"].toDouble(),
+      longitude: json["longitude"].toDouble(),
+      displayName: json["description"],
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      "id": id,
+      "latitude": latitude,
+      "longitude": longitude,
+      "description": displayName,
+    };
+  }
 
   @override
   String toString() {
