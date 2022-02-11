@@ -14,10 +14,12 @@ class BloodPostScreen extends StatelessWidget {
     print("BloodPostScreen");
     print(data?.toJson());
     return Scaffold(
-      body: Container(
-        alignment: Alignment.topCenter,
-        padding: EdgeInsets.only(top: 40),
-        child: BloodPostWidget(postData: data),
+      body: SingleChildScrollView(
+        child: Container(
+          alignment: Alignment.topCenter,
+          padding: EdgeInsets.only(top: 30, bottom: 30),
+          child: BloodPostWidget(postData: data),
+        ),
       ),
     );
   }

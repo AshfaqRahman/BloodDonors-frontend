@@ -1,4 +1,5 @@
 import 'package:bms_project/providers/blood_post_provider.dart';
+import 'package:bms_project/providers/comment_provider.dart';
 import 'package:bms_project/screen/home_screen.dart';
 import 'package:bms_project/screen/auth_screen.dart';
 import 'package:bms_project/screen/blood_post_view_screen.dart';
@@ -35,12 +36,15 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider.value(
           value: BloodPostProvider(),
         ),
+        ChangeNotifierProvider.value(
+          value: CommentProvider(),
+        ),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
         title: 'blood management system',
         theme: _buildTheme(),
-        home: const BloodPostScreen(),
+        home: const AuthScreen(),
         routes: {
           HomeScreen.route: (ctx) => HomeScreen(),
           AuthScreen.route: (context) => const AuthScreen(),

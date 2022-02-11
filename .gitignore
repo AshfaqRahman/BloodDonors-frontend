@@ -1,5 +1,6 @@
 #
 windows
+.vscode
 # Miscellaneous
 *.class
 *.log
