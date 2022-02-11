@@ -73,7 +73,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     width: MediaQuery.of(context).size.width * .2,
                     child: Container(
                       child: LeftPanel(context, _switchMidPanelIndex),
-                      decoration: BoxDecoration(color: Colors.amberAccent),
+                      //decoration: BoxDecoration(color: Colors.amberAccent),
                     ),
                   ),
                   Container(
@@ -85,7 +85,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     width: MediaQuery.of(context).size.width * .59,
                     child: Container(
                       child: MidPanel(midPanelIndex),
-                      decoration: BoxDecoration(color: Colors.amberAccent),
+                      //decoration: BoxDecoration(color: Colors.amberAccent),
                     ),
                   ),
                   Container(
@@ -97,7 +97,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     width: MediaQuery.of(context).size.width * .2,
                     child: Container(
                       child: Text("first part"),
-                      decoration: BoxDecoration(color: Colors.amberAccent),
+                      //decoration: BoxDecoration(color: Colors.amberAccent),
                     ),
                   ),
                 ],

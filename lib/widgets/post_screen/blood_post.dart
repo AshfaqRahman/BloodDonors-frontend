@@ -44,7 +44,7 @@ class _BloodPostWidgetState extends State<BloodPostWidget> {
 
   @override
   Widget build(BuildContext context) {
-    widget.postData = BloodPost.fromJson(json.decode(DummyConstants.postData));
+    //widget.postData = BloodPost.fromJson(json.decode(DummyConstants.postData));
 
     //fetchComments(context, postData!.postId);
 

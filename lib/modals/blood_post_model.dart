@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:bms_project/modals/osm_model.dart';
+import 'package:bms_project/utils/debug.dart';
 
 class BloodPostUserInput {
   String dueTime;
@@ -76,18 +77,21 @@ class BloodPost {
   String userName;
   DateTime created;
 
-  factory BloodPost.fromJson(Map<String, dynamic> jsonData) => BloodPost(
-        postId: jsonData["post_id"],
-        bloodGroup: jsonData["blood_group"],
-        amount: jsonData["amount"],
-        contact: jsonData["contact"],
-        dueTime: DateTime.parse(jsonData["due_time"]),
-        additionalInfo: json.decode(jsonData["additional_info"]),
-        location: OsmLocation.fromJson(jsonData["location"]),
-        userId: jsonData["user_id"],
-        userName: jsonData["user_name"],
-        created: DateTime.parse(jsonData["created"]),
-      );
+  factory BloodPost.fromJson(Map<String, dynamic> jsonData) {
+    //Log.d("BloodPost.fromJson", jsonData);
+    return BloodPost(
+      postId: jsonData["post_id"],
+      bloodGroup: jsonData["blood_group"],
+      amount: jsonData["amount"],
+      contact: jsonData["contact"],
+      dueTime: DateTime.parse(jsonData["due_time"]),
+      additionalInfo: json.decode(jsonData["additional_info"]),
+      location: OsmLocation.fromJson(jsonData["location"]),
+      userId: jsonData["user_id"],
+      userName: jsonData["user_name"],
+      created: DateTime.parse(jsonData["created"]),
+    );
+  }
 
   Map<String, dynamic> toJson() => {
         "post_id": postId,

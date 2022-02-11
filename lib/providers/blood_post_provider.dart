@@ -1,6 +1,8 @@
 import 'dart:convert';
 
-import 'package:bms_project/utils/constant.dart' as constants;
+import 'package:bms_project/providers/provider_response.dart';
+import 'package:bms_project/utils/constant.dart';
+import 'package:bms_project/utils/debug.dart';
 import 'package:flutter/material.dart';
 import 'package:bms_project/modals/blood_post_model.dart' as bp;
 import 'package:http/http.dart' as http;
@@ -9,10 +11,12 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../utils/environment.dart';
 
 class BloodPostProvider with ChangeNotifier {
+  static String TAG = "BloodPostProvider";
+
   Future getPost(String post_id) async {
     var url = '${Environment.apiUrl}/post/blood-post/$post_id';
     print("fetching blood post $post_id from $url");
-    String token = await constants.getToken();
+    String token = await Constants.getToken();
     try {
       http.Response response = await http.get(Uri.parse(url), headers: {
         'access-control-allow-origin': '*',
@@ -36,12 +40,39 @@ class BloodPostProvider with ChangeNotifier {
           'message': "Post not found",
         };
       }
-
     } catch (error) {
       return {
-          'success': false,
-          'message': "Post not found",
-        };
+        'success': false,
+        'message': "Post not found",
+      };
+    }
+  }
+
+  Future<ProviderResponse> getPosts() async {
+    String url = "${Environment.apiUrl}/post/blood-post/";
+    Log.d(TAG, "fechting from: $url");
+
+    try {
+      http.Response response = await http.get(Uri.parse(url),
+          headers: await Constants.getHeaders());
+
+      Log.d(TAG, response.body);
+
+      Map responseBody = json.decode(response.body);
+
+      if(responseBody['code'] == HttpSatusCode.OK){
+        List postJsonList = responseBody['data'];
+        List<bp.BloodPost> postList = postJsonList.map((e) {
+          return bp.BloodPost.fromJson(e);
+        }).toList();
+        return ProviderResponse(
+            success: true, message: "ok", data: postList);
+      }else{
+        return ProviderResponse(success: false, message: "no post found");
+      }
+    } catch (error) {
+      Log.d(TAG, error);
+      return ProviderResponse(success: false, message: "error");
     }
   }
 

@@ -1,22 +1,24 @@
 import 'package:shared_preferences/shared_preferences.dart';
 
-Future<String> getToken() async {
-  SharedPreferences prefs = await SharedPreferences.getInstance();
-  String token = prefs.getString("token") as String;
-  return token;
-}
+class Constants {
+  static Future<String> getToken() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String token = prefs.getString("token") as String;
+    return token;
+  }
 
-Future<Map<String, String>> getHeaders() async {
-  return {
-    'access-control-allow-origin': '*',
-    'content-type': 'application/json',
-    'authorization': await getToken(),
-  };
-}
+  static Future<Map<String, String>> getHeaders() async {
+    return {
+      'access-control-allow-origin': '*',
+      'content-type': 'application/json',
+      'authorization': await getToken(),
+    };
+  }
 
-void deleteToken() async {
-  SharedPreferences prefs = await SharedPreferences.getInstance();
-  prefs.clear();
+  static void deleteToken() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.clear();
+  }
 }
 
 class HttpSatusCode {
