@@ -51,7 +51,7 @@ class _BloodPostWidgetState extends State<BloodPostWidget> {
     List<Map> infoList = [
       {'title': "Amount: ", 'info': "${widget.postData!.amount}"},
       {'title': "Location: ", 'info': widget.postData!.location.displayName},
-      {'title': "Time: ", 'info': dateFormat.format(widget.postData!.created)},
+      {'title': "Time: ", 'info': dateFormat.format(widget.postData!.dueTime.toLocal())},
       {'title': "Contact: ", 'info': widget.postData!.contact},
       {
         'title': "Additional info: ",
