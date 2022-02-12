@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:bms_project/modals/blood_post_model.dart';
 import 'package:bms_project/providers/blood_post_provider.dart';
 import 'package:bms_project/screen/blood_post_view_screen.dart';
+import 'package:bms_project/utils/auth_util.dart';
 import 'package:bms_project/utils/dummy.dart';
 import 'package:bms_project/widgets/common/margin.dart';
 import 'package:bms_project/widgets/homepage/left_panel/create_post.dart';
@@ -91,7 +92,8 @@ class _LeftPanelState extends State<LeftPanel> {
                   .pushNamed(BloodPostScreen.route, arguments: value['data']);
             }
           }); */
-          BloodPost data = BloodPost.fromJson(json.decode(DummyConstants.postData));
+          BloodPost data =
+              BloodPost.fromJson(json.decode(DummyConstants.postData));
           Navigator.of(context)
               .pushNamed(BloodPostScreen.route, arguments: data);
         }
@@ -103,6 +105,7 @@ class _LeftPanelState extends State<LeftPanel> {
   void selectDestination(LeftPanelOption index) {
     if (index == LeftPanelOption.LOGOUT) {
       Navigator.of(context).pushNamed(AuthScreen.route);
+      AuthUtil.logout();
       return;
     }
 

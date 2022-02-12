@@ -27,10 +27,14 @@ class _HomeMidPanelState extends State<HomeMidPanel> {
                 snapshot.data!.success ? snapshot.data!.data : [];
             return Container(
               //width: MediaQuery.of(context).size.width*0.55,
-              padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 35),
+              padding: const EdgeInsets.symmetric(vertical: 15),
               child: ListView(
+                controller: ScrollController(),
                 children: postList.map((BloodPost post) {
-                  return BloodPostWidget(postData: post,);
+                  return Container(
+                    padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 35),
+                    child: BloodPostWidget(postData: post,)
+                    );
                 }).toList(),
               ),
             );
