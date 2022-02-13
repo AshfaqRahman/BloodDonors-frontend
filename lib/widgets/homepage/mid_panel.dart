@@ -20,7 +20,7 @@ class _MidPanelState extends State<MidPanel> {
           child: Text("Profile"),
         );
       case LeftPanelOption.HOME:
-        return const HomeMidPanel();
+        return HomeMidPanel();
       case LeftPanelOption.MESSAGE:
         return Container(
           child: Text("message"),

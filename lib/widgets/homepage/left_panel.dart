@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:bms_project/modals/blood_post_model.dart';
 import 'package:bms_project/providers/blood_post_provider.dart';
+import 'package:bms_project/providers/provider_response.dart';
 import 'package:bms_project/screen/blood_post_view_screen.dart';
 import 'package:bms_project/utils/auth_util.dart';
 import 'package:bms_project/utils/dummy.dart';
@@ -9,6 +10,7 @@ import 'package:bms_project/widgets/common/margin.dart';
 import 'package:bms_project/widgets/homepage/left_panel/create_post.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:http/http.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -29,9 +31,12 @@ enum LeftPanelOption {
 
 class LeftPanel extends StatefulWidget {
   final Function midPanelChangeCallback;
-  final BuildContext context;
-  const LeftPanel(this.context, this.midPanelChangeCallback, {Key? key})
-      : super(key: key);
+  final Function onBloodPostCreated;
+  const LeftPanel({
+    Key? key,
+    required this.midPanelChangeCallback,
+    required this.onBloodPostCreated,
+  }) : super(key: key);
 
   @override
   _LeftPanelState createState() => _LeftPanelState();
@@ -39,87 +44,11 @@ class LeftPanel extends StatefulWidget {
 
 class _LeftPanelState extends State<LeftPanel> {
   LeftPanelOption _selectedDestination = LeftPanelOption.HOME;
+  late BuildContext ctx;
+
+  bool _initState = false;
 
   Color? userNameTextColor;
-
-  @override
-  void initState() {
-    userNameTextColor = Theme.of(widget.context).textTheme.headline6?.color;
-    buttons = [
-      {
-        'text': 'Create blood post',
-        'onPress': () async {
-          var result = await showDialog(
-            context: widget.context,
-            builder: (BuildContext context) {
-              return AlertDialog(
-                content: CreatePost(),
-              );
-            },
-          );
-          print("after popping ${result}");
-          ScaffoldMessenger.of(widget.context).showSnackBar(
-            SnackBar(
-              // width: MediaQuery.of(context).size.width * 0.2,
-              margin: EdgeInsets.only(
-                  left: MediaQuery.of(context).size.width * 0.7,
-                  right: 20,
-                  bottom: 20),
-              behavior: SnackBarBehavior.floating,
-              content: Text(result['message']),
-              action: (result['data'] != null)
-                  ? SnackBarAction(
-                      label: 'Show',
-                      onPressed: () {
-                        Navigator.of(context).pushNamed(BloodPostScreen.route,
-                            arguments: result['data']);
-                      },
-                    )
-                  : null,
-            ),
-          );
-        }
-      },
-      {
-        'text': 'Add donation',
-        'onPress': () {
-          /* Provider.of<BloodPostProvider>(widget.context, listen: false)
-              .getPost(DummyConstants.dummyPostId)
-              .then((value) {
-            if (value['success']) {
-              print("data recieved: $value['data']");
-              Navigator.of(context)
-                  .pushNamed(BloodPostScreen.route, arguments: value['data']);
-            }
-          }); */
-          BloodPost data =
-              BloodPost.fromJson(json.decode(DummyConstants.postData));
-          Navigator.of(context)
-              .pushNamed(BloodPostScreen.route, arguments: data);
-        }
-      },
-    ];
-    super.initState();
-  }
-
-  void selectDestination(LeftPanelOption index) {
-    if (index == LeftPanelOption.LOGOUT) {
-      Navigator.of(context).pushNamed(AuthScreen.route);
-      AuthUtil.logout();
-      return;
-    }
-
-    setState(() {
-      //print(index);
-      userNameTextColor =
-          (index == LeftPanelOption.PROFILE) // if profile name is selected
-              ? Theme.of(widget.context).primaryColor
-              : Theme.of(widget.context).textTheme.headline6?.color;
-
-      _selectedDestination = index;
-      widget.midPanelChangeCallback(index);
-    });
-  }
 
   List<Map<String, dynamic>> menu = [
     {
@@ -166,10 +95,81 @@ class _LeftPanelState extends State<LeftPanel> {
 
   List<Map<String, dynamic>>? buttons;
 
+  void initSate(BuildContext context) {
+    this.ctx = context;
+    userNameTextColor = Theme.of(context).textTheme.headline6?.color;
+    buttons = [
+      {
+        'text': 'Create blood post',
+        'onPress': () async {
+          ProviderResponse result = await showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return const AlertDialog(
+                content: CreatePost(),
+              );
+            },
+          );
+          widget.onBloodPostCreated();
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              duration: const Duration(seconds: 15),
+              // width: MediaQuery.of(context).size.width * 0.2,
+              margin: EdgeInsets.only(
+                  left: MediaQuery.of(context).size.width * 0.7,
+                  right: 20,
+                  bottom: 20),
+              behavior: SnackBarBehavior.floating,
+              content: Text(result.message),
+              action: (result.data != null)
+                  ? SnackBarAction(
+                      label: 'View',
+                      onPressed: () {
+                        Navigator.of(context).pushNamed(BloodPostScreen.route,
+                            arguments: result.data);
+                      },
+                    )
+                  : null,
+            ),
+          );
+        }
+      },
+      {
+        'text': 'Add donation',
+        'onPress': () {
+          BloodPost data =
+              BloodPost.fromJson(json.decode(DummyConstants.postData));
+          Navigator.of(context)
+              .pushNamed(BloodPostScreen.route, arguments: data);
+        }
+      },
+    ];
+  }
+
+  void setSelectDestination(LeftPanelOption index) {
+    if (index == LeftPanelOption.LOGOUT) {
+      Navigator.of(context).pushNamed(AuthScreen.route);
+      AuthUtil.logout();
+      return;
+    }
+
+    setState(() {
+      //print(index);
+      userNameTextColor =
+          (index == LeftPanelOption.PROFILE) // if profile name is selected
+              ? Theme.of(ctx).primaryColor
+              : Theme.of(ctx).textTheme.headline6?.color;
+
+      _selectedDestination = index;
+      widget.midPanelChangeCallback(index);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final textTheme = theme.textTheme;
+    if (!_initState) initSate(context);
 
     return Container(
       width: double.infinity,
@@ -185,7 +185,7 @@ class _LeftPanelState extends State<LeftPanel> {
                 // padding: EdgeInsets.zero,
                 children: <Widget>[
                   UserWidget(
-                      userNameTextColor ?? Colors.black, selectDestination),
+                      userNameTextColor ?? Colors.black, setSelectDestination),
                   const Divider(
                     height: 1,
                     thickness: 1,
@@ -198,7 +198,7 @@ class _LeftPanelState extends State<LeftPanel> {
                       leading: Icon(value['icon']),
                       title: Text(value['title']),
                       selected: _selectedDestination == index,
-                      onTap: () => selectDestination(index),
+                      onTap: () => setSelectDestination(index),
                     );
                   }).toList(),
                   const VerticalSpacing(15),

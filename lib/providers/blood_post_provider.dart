@@ -76,7 +76,7 @@ class BloodPostProvider with ChangeNotifier {
     }
   }
 
-  Future createPost(bp.BloodPostUserInput bloodPost) async {
+  Future<ProviderResponse> createPost(bp.BloodPostUserInput bloodPost) async {
     var url = '${Environment.apiUrl}/post/blood-post/';
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String token = prefs.getString("token") as String;
@@ -94,24 +94,17 @@ class BloodPostProvider with ChangeNotifier {
       notifyListeners();
       if (data['code'] == 201) {
         print("ok code 201 post created.");
-        return {
-          'success': true,
-          'message': data['message'],
-          'data': bp.BloodPost.fromJson(data['data']),
-        };
-      } else {
-        return {
-          'success': false,
-          'message': data['message'] ?? "unknown reason",
-        };
+        return ProviderResponse(
+          success: true,
+          message: "Post created successfully.",
+          data: bp.BloodPost.fromJson(data['data']),
+        );
+      } else{
+        return ProviderResponse(success: false, message: "Post was not created");
       }
     } catch (error) {
-      print("error");
-      print(error);
-      return {
-        'success': false,
-        'message': error,
-      };
+      Log.d(TAG, error);
+      return ProviderResponse(success: false, message: "error");
     }
   }
 }

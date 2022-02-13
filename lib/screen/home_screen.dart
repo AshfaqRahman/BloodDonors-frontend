@@ -1,5 +1,9 @@
+import 'dart:ui';
+
 import 'package:bms_project/modals/user.dart';
 import 'package:bms_project/providers/users.dart';
+import 'package:bms_project/utils/auth_util.dart';
+import 'package:bms_project/utils/debug.dart';
 import 'package:bms_project/widgets/homepage/left_panel.dart';
 import 'package:bms_project/widgets/homepage/mid_panel.dart';
 import 'package:flutter/material.dart';
@@ -15,6 +19,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  static const TAG = "HomeScreen";
   late BuildContext ctx;
   var _isInit = true;
   var users;
@@ -23,26 +28,17 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   void initState() {
-    print("initiating");
-    // if (_isInit) {
-    //   final value = Provider.of<Users>(context as BuildContext).getUserData();
-    // }
-    // _isInit = false;
-    // super.initState();
-    // WidgetsBinding.instance!.addPostFrameCallback((timeStamp) {
-    //   var users = Provider.of<Users>(ctx);
-    //   print(users.user);
-    //   this._isInit = false;
-    // });
-    // WidgetsBinding.instance?.addPostFrameCallback((timeStamp) async {
-    //   users = Provider.of<Users>(ctx, listen: false);
-    //   await users.getUserData();
-    //   var future = Future.delayed(const Duration(milliseconds: 2000), () {
-    //     setState(() {
-    //       _isInit = false;
-    //     });
-    //   });
-    // });
+    Log.d(TAG, "initiating");
+    super.initState();
+    WidgetsBinding.instance?.addPostFrameCallback((timeStamp) async {
+      AuthUtil.getToken().then((String? token) {
+        Log.d(TAG, "token: $token");
+        if (token == null || token == "") {
+          Log.d(TAG, "Token not found poping to auth screen");
+          Navigator.of(ctx).pop();
+        }
+      });
+    });
   }
 
   _switchMidPanelIndex(LeftPanelOption option) {
@@ -51,9 +47,15 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
+  void _onBloodPostCreated() {
+    setState(() {
+      Log.d(TAG, "_onBloodPostCreated");
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    // ctx = context;
+    ctx = context;
 
     return Scaffold(
       appBar: AppBar(
@@ -72,26 +74,25 @@ class _HomeScreenState extends State<HomeScreen> {
                   Container(
                     width: MediaQuery.of(context).size.width * .2,
                     child: Container(
-                      child: LeftPanel(context, _switchMidPanelIndex),
+                      child: LeftPanel(
+                        midPanelChangeCallback: _switchMidPanelIndex,
+                        onBloodPostCreated: _onBloodPostCreated,
+                      ),
                       //decoration: BoxDecoration(color: Colors.amberAccent),
                     ),
                   ),
-                  Container(
-                    child: VerticalDivider(
-                      width: MediaQuery.of(context).size.width * .005,
-                    ),
+                  VerticalDivider(
+                    width: MediaQuery.of(context).size.width * .005,
                   ),
                   Container(
                     width: MediaQuery.of(context).size.width * .59,
                     child: Container(
                       child: MidPanel(midPanelIndex),
-                      //decoration: BoxDecoration(color: Colors.amberAccent),
+                      decoration: BoxDecoration(color: Color(0xe5e5e5)),
                     ),
                   ),
-                  Container(
-                    child: VerticalDivider(
-                      width: MediaQuery.of(context).size.width * .005,
-                    ),
+                  VerticalDivider(
+                    width: MediaQuery.of(context).size.width * .005,
                   ),
                   Container(
                     width: MediaQuery.of(context).size.width * .2,

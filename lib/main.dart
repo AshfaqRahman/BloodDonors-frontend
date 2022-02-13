@@ -64,8 +64,8 @@ class MyApp extends StatelessWidget {
     return base.copyWith(
       colorScheme: _colorScheme,
       scaffoldBackgroundColor: Colors.white, //const Color(0xFFEA5B70),
-      cardColor: const Color(0xFFEA5B70),
-      errorColor: const Color(0xFFEA5B70),
+      cardColor: Colors.white,
+      errorColor: Colors.red,
       buttonTheme: const ButtonThemeData(
         colorScheme: _colorScheme,
         textTheme: ButtonTextTheme.normal,
@@ -74,6 +74,10 @@ class MyApp extends StatelessWidget {
       textTheme: base.textTheme,
       primaryTextTheme: base.primaryTextTheme,
       iconTheme: _customIconTheme(base.iconTheme),
+      snackBarTheme: base.snackBarTheme.copyWith(
+        backgroundColor: Colors.blue,
+        actionTextColor: Colors.white,
+      ),
     );
   }
 

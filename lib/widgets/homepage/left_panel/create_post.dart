@@ -5,6 +5,7 @@ import 'package:bms_project/modals/blood_post_model.dart';
 import 'package:bms_project/providers/blood_post_provider.dart' as provide;
 import 'package:bms_project/modals/location.dart';
 import 'package:bms_project/modals/osm_model.dart';
+import 'package:bms_project/providers/provider_response.dart';
 import 'package:bms_project/widgets/common/blood_group_selection.dart';
 import 'package:bms_project/widgets/common/date_time_picker.dart';
 import 'package:bms_project/widgets/common/location_input.dart';
@@ -93,7 +94,7 @@ class _CreatePostState extends State<CreatePost> {
     print(json.encode(bloodPost.toMap()));
     Provider.of<provide.BloodPostProvider>(ctx, listen: false)
         .createPost(bloodPost)
-        .then((value) {
+        .then((ProviderResponse value) {
       Navigator.of(ctx).pop(value);
     });
   }
