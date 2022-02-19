@@ -1,11 +1,11 @@
 import 'package:bms_project/providers/blood_post_provider.dart';
 import 'package:bms_project/providers/comment_provider.dart';
+import 'package:bms_project/providers/post_react_provider.dart';
 import 'package:bms_project/screen/home_screen.dart';
 import 'package:bms_project/screen/auth_screen.dart';
 import 'package:bms_project/screen/blood_post_view_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:flutter_native_timezone/flutter_native_timezone.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -39,6 +39,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider.value(
           value: CommentProvider(),
         ),
+        ChangeNotifierProvider.value(value: PostReactProvider()),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,

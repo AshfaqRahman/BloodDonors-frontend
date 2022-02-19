@@ -18,7 +18,7 @@ class CommentProvider with ChangeNotifier {
   Future<ProviderResponse> createComment(String post_id, String comment) async {
     var url = "${Environment.apiUrl}/comment";
     debugPrint("posting comment to $url");
-    debugPrint({'post_id': post_id, "text": comment});
+    debugPrint({'post_id': post_id, "comment": comment});
 
     final body = json.encode(
       {'post_id': post_id, "text": comment},

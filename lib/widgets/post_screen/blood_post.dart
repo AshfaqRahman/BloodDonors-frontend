@@ -1,16 +1,18 @@
-import 'dart:convert';
-import 'dart:html';
+import 'dart:core';
 import 'dart:math';
 
 import 'package:bms_project/modals/blood_post_model.dart';
 import 'package:bms_project/modals/comment_model.dart';
+import 'package:bms_project/modals/react_model.dart';
 import 'package:bms_project/providers/comment_provider.dart';
+import 'package:bms_project/providers/post_react_provider.dart';
 import 'package:bms_project/providers/provider_response.dart';
 import 'package:bms_project/utils/debug.dart';
+import 'package:bms_project/utils/token.dart';
 import 'package:bms_project/widgets/common/decorations.dart';
 import 'package:bms_project/widgets/common/margin.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_native_timezone/flutter_native_timezone.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -19,8 +21,8 @@ import 'dart:ui' as ui;
 import '../../utils/dummy.dart';
 
 class BloodPostWidget extends StatefulWidget {
-  
   BloodPost? postData;
+
   BloodPostWidget({Key? key, this.postData}) : super(key: key);
 
   @override
@@ -29,6 +31,7 @@ class BloodPostWidget extends StatefulWidget {
 
 class _BloodPostWidgetState extends State<BloodPostWidget> {
   static String TAG = "BloodPostWidget";
+
   // https://api.flutter.dev/flutter/intl/DateFormat-class.html
   DateFormat dateFormat = DateFormat('dd MMM yyyy, hh:mm a');
 
@@ -45,13 +48,14 @@ class _BloodPostWidgetState extends State<BloodPostWidget> {
   @override
   Widget build(BuildContext context) {
     //widget.postData = BloodPost.fromJson(json.decode(DummyConstants.postData));
-
-    //fetchComments(context, postData!.postId);
-
+    //Log.d(TAG, widget.postData!.toJson());
     List<Map> infoList = [
       {'title': "Amount: ", 'info': "${widget.postData!.amount}"},
       {'title': "Location: ", 'info': widget.postData!.location.displayName},
-      {'title': "Time: ", 'info': dateFormat.format(widget.postData!.dueTime.toLocal())},
+      {
+        'title': "Time: ",
+        'info': dateFormat.format(widget.postData!.dueTime.toLocal())
+      },
       {'title': "Contact: ", 'info': widget.postData!.contact},
       {
         'title': "Additional info: ",
@@ -98,41 +102,13 @@ class _BloodPostWidgetState extends State<BloodPostWidget> {
                 );
               }).toList(),
               const VerticalSpacing(20),
-              const Divider(
-                thickness: 1,
-                height: 10,
-              ),
               InteractionSection(
-                onCommentButtonPressed: () {
-                  setState(() {
-                    showComment = !showComment;
-                  });
-                },
+                bloodPost: widget.postData!,
               ), // like, comment , share
               const Divider(
                 thickness: 1,
                 height: 10,
-              ),
-              if(showComment)
-              const VerticalSpacing(20),
-              if (showComment)
-                FutureBuilder(
-                  future: fetchComments(context, widget.postData!.postId),
-                  builder: (BuildContext context,
-                      AsyncSnapshot<List<Comment>> snapshot) {
-                    if (snapshot.hasData) {
-                      Log.d(TAG, "inside snapshot");
-                      Log.d(
-                        TAG, "data size: ${snapshot.data!}");
-                      return CommentSection(
-                        postId: widget.postData!.postId,
-                        commentList: snapshot.data,
-                      );
-                    } else {
-                      return Container();
-                    }
-                  },
-                )
+              )
             ],
           ),
         ),
@@ -142,6 +118,8 @@ class _BloodPostWidgetState extends State<BloodPostWidget> {
 }
 
 class InfoWidget extends StatelessWidget {
+  static const String TAG = "InfoWidget";
+
   InfoWidget({
     Key? key,
     required this.title,
@@ -153,6 +131,7 @@ class InfoWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    //Log.d(TAG, "$title: $info");
     return Container(
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -161,15 +140,17 @@ class InfoWidget extends StatelessWidget {
           Flexible(
             // https://stackoverflow.com/questions/41557139/how-do-i-bold-or-format-a-piece-of-text-within-a-paragraph
             child: RichText(
-              text: TextSpan(children: [
-                TextSpan(
-                    text: title ?? "",
-                    style: Theme.of(context)
-                        .textTheme
-                        .subtitle1
-                        ?.copyWith(fontWeight: FontWeight.bold)),
-                TextSpan(text: info ?? ""),
-              ]),
+              text: TextSpan(
+                  style: Theme.of(context).textTheme.subtitle2,
+                  children: [
+                    TextSpan(
+                        text: title ?? "",
+                        style: Theme.of(context)
+                            .textTheme
+                            .subtitle1
+                            ?.copyWith(fontWeight: FontWeight.bold)),
+                    TextSpan(text: info ?? ""),
+                  ]),
             ),
           ),
         ],
@@ -219,11 +200,48 @@ class PostCreatorInfoWidget extends StatelessWidget {
   }
 }
 
-class InteractionSection extends StatelessWidget {
-  InteractionSection({Key? key, required this.onCommentButtonPressed})
-      : super(key: key);
+class InteractionSection extends StatefulWidget {
+  InteractionSection({Key? key, required this.bloodPost}) : super(key: key);
 
-  Function onCommentButtonPressed;
+  BloodPost bloodPost;
+
+  @override
+  State<InteractionSection> createState() => _InteractionSectionState();
+}
+
+class _InteractionSectionState extends State<InteractionSection> {
+  static const String TAG = "InteractionSection";
+
+  bool showComment = false; // state variable
+  bool isLiked = false; // state variable for like button
+  List<React> reactList = [];
+  int totalReactCnt = 0;
+  List<Comment> commentList = [];
+  int totalComments = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    Provider.of<PostReactProvider>(context, listen: false)
+        .getReacts(widget.bloodPost.postId)
+        .then((value) async {
+      if (value.success) {
+        reactList = value.data;
+        Log.d(TAG, "react count: ${reactList.length}");
+        totalReactCnt = reactList.length;
+        String userId = await AuthToken.parseUserId();
+        for (int i = 0; i < reactList.length; i++) {
+          Log.d(TAG, "user ${reactList[i].userId} likes the post");
+          if (reactList[i].userId == userId) {
+            Log.d(TAG, "$userId likes the post ${widget.bloodPost.postId}");
+            isLiked = true;
+            break;
+          }
+        }
+        setState(() {});
+      }
+    });
+  }
 
   var buttons = [
     {
@@ -243,36 +261,153 @@ class InteractionSection extends StatelessWidget {
     },
   ];
 
-  void onPressed(String button) {
+  void onPressed(String button) async {
     if (button == "Comment") {
-      onCommentButtonPressed();
+      setState(() {
+        showComment = !showComment; // toggle comment section
+      });
+    } else if (button == "Like") {
+      Log.d(TAG, "Like button pressed for post ${widget.bloodPost.postId}");
+      _toggleReact();
     }
+  }
+
+  void _toggleReact() async {
+    if (!isLiked) {
+      // add react
+      setState(() {
+        isLiked = true;
+        totalReactCnt++;
+      });
+      ProviderResponse response =
+          await Provider.of<PostReactProvider>(context, listen: false)
+              .submitReact(widget.bloodPost.postId);
+      if (response.success) {
+        React react = response.data;
+        reactList.add(react);
+      }
+    } else {
+      setState(() {
+        isLiked = false;
+        totalReactCnt--;
+      });
+      // remove react
+      ProviderResponse response =
+          await Provider.of<PostReactProvider>(context, listen: false)
+              .removeReact(widget.bloodPost.postId);
+
+      if (response.success) {
+        for (int i = 0; i < reactList.length; i++) {
+          React react = reactList[i];
+          if (react.userId == await AuthToken.parseUserId()) {
+            setState(() {
+              reactList.removeAt(i);
+            });
+            break;
+          }
+        }
+      }
+    }
+  }
+
+  Icon interactionIcon(Map item) {
+    if (item['title'] == "Like" && isLiked) return Icon(item['activeIcon']);
+    return Icon(item['icon']);
+  }
+
+  Future<List<Comment>> fetchComments(BuildContext ctx, String postId) async {
+    ProviderResponse response =
+        await Provider.of<CommentProvider>(context, listen: false)
+            .getComments(postId);
+    Log.d(TAG, response.toJson());
+    return response.success ? response.data : [];
+  }
+
+  // comment is submitted from WriteComment
+  void _onCommentAdd(Comment comment) {
+    commentList.add(comment);
+    setState(() {
+      totalComments++;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+    Log.d(TAG, "redrawing $TAG");
+    return Column(
       children: [
-        ...buttons.map((Map item) {
-          return Flexible(
-            child: TextButton(
-              onPressed: () {
-                onPressed(item['title']);
-              },
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(item["icon"]),
-                  const VerticalDivider(
-                    width: 5,
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: 10),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text("${totalReactCnt} likes"),
+              Text("${totalComments} comments"),
+            ],
+          ),
+        ),
+        const Divider(
+          thickness: 1,
+          height: 10,
+        ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            ...buttons.map((Map item) {
+              return Flexible(
+                child: TextButton(
+                  onPressed: () {
+                    onPressed(item['title']);
+                  },
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      interactionIcon(item),
+                      const VerticalDivider(
+                        width: 5,
+                      ),
+                      Text(item["title"]),
+                    ],
                   ),
-                  Text(item["title"]),
-                ],
-              ),
-            ),
-          );
-        }),
+                ),
+              );
+            }),
+          ],
+        ),
+        // comment section
+        if (showComment) const VerticalSpacing(20),
+        FutureBuilder(
+          future: fetchComments(context, widget.bloodPost.postId),
+          builder:
+              (BuildContext context, AsyncSnapshot<List<Comment>> snapshot) {
+            if (snapshot.hasData) {
+              Log.d(TAG, "inside snapshot");
+              Log.d(TAG, "data size: ${snapshot.data!}");
+              totalComments = snapshot.data!.length;
+              return showComment
+                  ? Column(
+                      children: [
+                        WriteCommentWidget(
+                          postId: widget.bloodPost.postId,
+                          onCommentAdd: _onCommentAdd,
+                        ),
+                        const VerticalSpacing(10),
+                        const Divider(
+                          thickness: 1,
+                          height: 20,
+                        ),
+                        CommentSection(
+                          postId: widget.bloodPost.postId,
+                          commentList: snapshot.data,
+                        ),
+                      ],
+                    )
+                  : Container();
+            } else {
+              return Container();
+            }
+          },
+        )
       ],
     );
   }
@@ -288,38 +423,18 @@ class CommentSection extends StatefulWidget {
   String postId;
 
   List<Comment>? commentList;
+
   @override
   State<CommentSection> createState() => _CommentSectionState();
 }
 
 class _CommentSectionState extends State<CommentSection> {
-  // = DummyConstants.dummyCommentList(5);
-
-  void _onCommentAdd(Comment comment) {
-    setState(() {
-      widget.commentList!.add(comment);
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
-    var list = ["int", "int"];
-
-    DateFormat dateFormat = DateFormat('dd MMM yyyy, hh:mm a');
-
     return Container(
-      padding: EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.only(bottom: 12),
       child: Column(
         children: [
-          WriteCommentWidget(
-            postId: widget.postId,
-            onCommentAdd: _onCommentAdd,
-          ),
-          VerticalSpacing(10),
-          Divider(
-            thickness: 1,
-            height: 20,
-          ),
           if (widget.commentList != null && widget.commentList!.length > 0)
             ListView.separated(
               shrinkWrap: true,
@@ -328,7 +443,7 @@ class _CommentSectionState extends State<CommentSection> {
                 return CommentWidget(comment: widget.commentList![index]);
               },
               separatorBuilder: (context, index) {
-                return Divider(height: 20);
+                return const Divider(height: 20);
               },
             ),
         ],
@@ -402,6 +517,8 @@ class WriteCommentWidget extends StatelessWidget {
 
   String postId;
 
+  TextEditingController _commentTextController = TextEditingController();
+
   String? commentInputText;
 
   @override
@@ -424,30 +541,25 @@ class WriteCommentWidget extends StatelessWidget {
             child: Container(
           height: 40,
           child: TextField(
+            controller: _commentTextController,
             decoration: getInputDecoration(context, "", null, 25),
-            onChanged: (value) {
-              commentInputText = value;
+            onSubmitted: (comment) {
+              if (comment != "") {
+                sendComment(context, comment);
+              } else {
+                Log.d(TAG, "comment text can't be empty.");
+              }
             },
           ),
         )),
-        HorizontalSpacing(15),
+        const HorizontalSpacing(15),
         Container(
           height: 40,
           child: ElevatedButton(
             onPressed: () {
-              if (commentInputText != null && commentInputText != "") {
-                Log.d(TAG, "posting comment: $commentInputText");
-                Provider.of<CommentProvider>(context, listen: false)
-                    .createComment(postId, commentInputText!)
-                    .then((ProviderResponse response) {
-                  if (response.success) {
-                    Comment comment = response.data;
-                    onCommentAdd(comment);
-                    Log.d(TAG, "data: ${comment.toJson()}");
-                  } else {
-                    Log.d(TAG, response.message);
-                  }
-                });
+              String comment = _commentTextController.text;
+              if (comment != "") {
+                sendComment(context, comment);
               } else {
                 Log.d(TAG, "comment text can't be empty.");
               }
@@ -461,5 +573,20 @@ class WriteCommentWidget extends StatelessWidget {
         ),
       ],
     );
+  }
+
+  void sendComment(BuildContext context, String comment) {
+    Log.d(TAG, "sendComment: sending: $comment");
+    Provider.of<CommentProvider>(context, listen: false)
+        .createComment(postId, comment)
+        .then((ProviderResponse response) {
+      if (response.success) {
+        Comment comment = response.data;
+        onCommentAdd(comment);
+        Log.d(TAG, "data: ${comment.toJson()}");
+      } else {
+        Log.d(TAG, response.message);
+      }
+    });
   }
 }

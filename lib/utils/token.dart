@@ -1,6 +1,19 @@
+import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class Constants {
+class AuthToken{
+  static Future<String> parseUserName() async {
+    String token = await getToken();
+    Map<String, dynamic> decodedToken = JwtDecoder.decode(token);
+    return decodedToken['name'] ?? "";
+  }
+
+  static Future<String> parseUserId() async{
+    String token = await getToken();
+    Map<String, dynamic> decodedToken = JwtDecoder.decode(token);
+    return decodedToken['id'] ?? "";
+  }
+
   static Future<String> getToken() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String token = prefs.getString("token") as String;
@@ -19,11 +32,4 @@ class Constants {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.clear();
   }
-}
-
-class HttpSatusCode {
-  static int CREATED = 201;
-  static int OK = 200;
-  static int NOT_FOUND = 404;
-  static int DELETED = 202;
 }

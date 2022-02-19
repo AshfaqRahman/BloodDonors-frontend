@@ -24,7 +24,7 @@ class OsmLocation {
       id: json["id"],
       latitude: json["latitude"].toDouble(),
       longitude: json["longitude"].toDouble(),
-      displayName: json["description"],
+      displayName: json["description"]??"",
     );
   }
 
@@ -46,7 +46,7 @@ class OsmLocation {
     return {
       'latitude': latitude,
       'longitude': longitude,
-      'displayName': displayName,
+      'display_name': displayName,
     };
   }
 }

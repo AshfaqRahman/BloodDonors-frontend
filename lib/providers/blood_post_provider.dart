@@ -53,21 +53,21 @@ class BloodPostProvider with ChangeNotifier {
     Log.d(TAG, "fechting from: $url");
 
     try {
-      http.Response response = await http.get(Uri.parse(url),
-          headers: await Constants.getHeaders());
+      http.Response response =
+          await http.get(Uri.parse(url), headers: await Constants.getHeaders());
 
-      Log.d(TAG, response.body);
+      //Log.d(TAG, response.body);
 
       Map responseBody = json.decode(response.body);
 
-      if(responseBody['code'] == HttpSatusCode.OK){
+      if (responseBody['code'] == HttpSatusCode.OK) {
         List postJsonList = responseBody['data'];
+        Log.d(TAG, "total post: ${postJsonList.length}");
         List<bp.BloodPost> postList = postJsonList.map((e) {
           return bp.BloodPost.fromJson(e);
         }).toList();
-        return ProviderResponse(
-            success: true, message: "ok", data: postList);
-      }else{
+        return ProviderResponse(success: true, message: "ok", data: postList);
+      } else {
         return ProviderResponse(success: false, message: "no post found");
       }
     } catch (error) {
@@ -94,13 +94,15 @@ class BloodPostProvider with ChangeNotifier {
       notifyListeners();
       if (data['code'] == 201) {
         print("ok code 201 post created.");
+        bp.BloodPost post = bp.BloodPost.fromJson(data['data']);
         return ProviderResponse(
           success: true,
           message: "Post created successfully.",
-          data: bp.BloodPost.fromJson(data['data']),
+          data: post,
         );
-      } else{
-        return ProviderResponse(success: false, message: "Post was not created");
+      } else {
+        return ProviderResponse(
+            success: false, message: "Post was not created");
       }
     } catch (error) {
       Log.d(TAG, error);

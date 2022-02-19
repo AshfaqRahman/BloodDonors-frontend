@@ -1,21 +1,14 @@
 // import 'dart:ffi';
-
+import 'package:latlong2/latlong.dart';
 import 'package:bms_project/modals/location.dart';
 import 'package:bms_project/modals/user.dart';
 import 'package:bms_project/providers/users.dart';
 import 'package:bms_project/widgets/common/blood_group_selection.dart';
 import 'package:bms_project/widgets/common/location_input.dart';
-import 'package:bms_project/widgets/location_map.dart';
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:geolocator/geolocator.dart';
-
-// import 'package:geocode/geocode.dart';
-// import 'package:mapbox_geocoding/model/reverse_geocoding.dart';
 
 import 'dart:async';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
 
 import '../../modals/osm_model.dart';

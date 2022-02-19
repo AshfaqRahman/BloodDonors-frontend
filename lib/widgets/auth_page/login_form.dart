@@ -94,10 +94,10 @@ class _LoginFormState extends State<LoginForm> {
         //showAlertDialog(context, "signed in", value[1], flag: true);
         Navigator.of(context).pushNamed(HomeScreen.route);
       } else if (value['success'] == false) {
-        showAlertDialog(context, "login failed", value[1]);
+        showAlertDialog(context, "Login failed", "Invalid username or password!");
       }
     }).catchError((_) {
-      showAlertDialog(context, "login failed", "you got a problem!");
+      showAlertDialog(context, "Login failed", "Invalid username or password!");
     });
   }
 

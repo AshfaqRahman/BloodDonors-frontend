@@ -89,7 +89,7 @@ class BloodPost {
       location: OsmLocation.fromJson(jsonData["location"]),
       userId: jsonData["user_id"],
       userName: jsonData["user_name"],
-      created: DateTime.parse(jsonData["created"]),
+      created: DateTime.parse(jsonData["created"]??DateTime.now().toString()),
     );
   }
 
