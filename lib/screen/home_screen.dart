@@ -24,7 +24,7 @@ class _HomeScreenState extends State<HomeScreen> {
   var _isInit = true;
   var users;
 
-  LeftPanelOption midPanelIndex = LeftPanelOption.HOME;
+  LeftPanelOption midPanelIndex = LeftPanelOption.PROFILE;
 
   @override
   void initState() {

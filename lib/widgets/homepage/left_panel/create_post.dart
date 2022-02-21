@@ -15,6 +15,8 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import '../../common/dialog_topbar_widget.dart';
+
 class CreatePost extends StatefulWidget {
   const CreatePost({Key? key}) : super(key: key);
 
@@ -112,7 +114,7 @@ class _CreatePostState extends State<CreatePost> {
         child: ListView(
           shrinkWrap: true,
           children: [
-            const TopBar(),
+            const DialogTopBar(title: "Create Post",),
             const Divider(
               height: 1,
               thickness: 1,
@@ -209,37 +211,6 @@ class _CreatePostState extends State<CreatePost> {
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class TopBar extends StatelessWidget {
-  const TopBar({
-    Key? key,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    ThemeData themeData = Theme.of(context);
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(0, 0, 0, 8),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          const Text("         "),
-          Text(
-            "Create Post",
-            style: themeData.textTheme.headline6
-                ?.copyWith(color: themeData.primaryColor),
-          ),
-          //const Spacer(),
-          IconButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              icon: const Icon(FontAwesomeIcons.timesCircle))
-        ],
       ),
     );
   }

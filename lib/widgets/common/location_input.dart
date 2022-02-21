@@ -18,6 +18,8 @@ class _InputLocationState extends State<InputLocation> {
   OsmLocation? selectedLocation;
   bool _foundLocation = false;
 
+  final TextEditingController _controller = TextEditingController();
+
   void _openMapDialog(double lat, double lng, double zoom) async {
     // print("inside _openMapDialog");
     double width = MediaQuery.of(context).size.width;
@@ -45,6 +47,7 @@ class _InputLocationState extends State<InputLocation> {
       widget.onLocationSelected(location);
       _foundLocation = true;
       selectedLocation = location;
+      _controller.text = location.displayName;
     });
   }
 
@@ -63,7 +66,7 @@ class _InputLocationState extends State<InputLocation> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
+    /* return Column(
       children: [
         ElevatedButton(
           onPressed: () => showMapDialog(),
@@ -75,6 +78,54 @@ class _InputLocationState extends State<InputLocation> {
             child: Text("Selected address: ${selectedLocation?.displayName}"),
           ),
       ],
+    ); */
+    return TextField(
+      readOnly: true,
+      onTap: () {
+        showMapDialog();
+      },
+      controller: _controller,
+      style: Theme.of(context).textTheme.subtitle1,
+      cursorColor: Theme.of(context).primaryColor,
+      decoration: InputDecoration(
+        labelText: "Select Location",
+        contentPadding: const EdgeInsets.symmetric(horizontal: 12),
+        labelStyle: TextStyle(
+          color: Theme.of(context).primaryColor,
+          fontSize: Theme.of(context).textTheme.subtitle2?.fontSize,
+        ),
+        border: OutlineInputBorder(
+          borderSide: BorderSide(
+            color: Theme.of(context).primaryColor,
+          ),
+          borderRadius: BorderRadius.circular(5),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderSide: BorderSide(
+            color: Theme.of(context).primaryColor,
+          ),
+          borderRadius: BorderRadius.circular(5),
+        ),
+        suffixIcon: Padding(
+          padding: const EdgeInsets.all(5),
+          child: Container(
+            padding: EdgeInsets.symmetric(vertical: 1),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(10),
+              color: Theme.of(context).primaryColor,
+            ),
+            child: IconButton(
+              onPressed: () {
+                showMapDialog();
+              },
+              icon: const Icon(
+                Icons.pin_drop_outlined,
+                color: Colors.white,
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

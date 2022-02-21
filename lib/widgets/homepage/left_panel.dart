@@ -9,6 +9,7 @@ import 'package:bms_project/utils/dummy.dart';
 import 'package:bms_project/utils/token.dart';
 import 'package:bms_project/widgets/common/margin.dart';
 import 'package:bms_project/widgets/common/profile_picture.dart';
+import 'package:bms_project/widgets/homepage/left_panel/create_donation.dart';
 import 'package:bms_project/widgets/homepage/left_panel/create_post.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -138,11 +139,14 @@ class _LeftPanelState extends State<LeftPanel> {
       },
       {
         'text': 'Add donation',
-        'onPress': () {
-          BloodPost data =
-              BloodPost.fromJson(json.decode(DummyConstants.postData));
-          Navigator.of(context)
-              .pushNamed(BloodPostScreen.route, arguments: data);
+        'onPress': () async {
+          ProviderResponse result = await showDialog(
+              context: context,
+              builder: (context) {
+                return const AlertDialog(
+                  content: AddDonationDialog(),
+                );
+              });
         }
       },
     ];

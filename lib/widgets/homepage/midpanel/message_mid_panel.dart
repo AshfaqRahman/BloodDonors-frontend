@@ -1,13 +1,17 @@
 import 'dart:math';
 
+import 'package:bms_project/providers/chat_provider.dart';
+import 'package:bms_project/providers/provider_response.dart';
 import 'package:bms_project/utils/environment.dart';
 import 'package:bms_project/utils/token.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 import 'package:socket_io_client/socket_io_client.dart' as sio;
 
 import '../../../modals/chat_message_model.dart';
+import '../../../modals/chat_model.dart';
 import '../../../utils/debug.dart';
 import '../../../utils/socket_events_util.dart';
 import '../../common/profile_picture.dart';
@@ -41,7 +45,7 @@ class _ChatMidPanelState extends State<ChatMidPanel> {
     //String recieverId = "33ab3559-4cc1-48d5-a005-1cbf9b0f3922";
     //String recieverId = "496f3e00-c53e-46af-8071-1cfd288e4e14";
     String recieverId = "74f4d938-67e2-4a7e-ba31-59238d7044bf";
-   // String receiverId = "6fb76fc5-7d3a-48ed-9964-50ef89711475";
+    // String receiverId = "6fb76fc5-7d3a-48ed-9964-50ef89711475";
 
     ChatMessage chatMessage = ChatMessage(
         senderId: await AuthToken.parseUserId(),
@@ -167,30 +171,6 @@ class _ChatMidPanelState extends State<ChatMidPanel> {
   }
 }
 
-class Chat {
-  Chat({
-    required this.username,
-    required this.userId,
-    required this.profileImageUrl,
-  });
-
-  String username;
-  String userId;
-  String profileImageUrl;
-
-  factory Chat.fromJson(Map<String, dynamic> json) => Chat(
-        username: json["username"],
-        userId: json["user_id"],
-        profileImageUrl: json["profile_image_url"],
-      );
-
-  Map<String, dynamic> toJson() => {
-        "username": username,
-        "user_id": userId,
-        "profile_image_url": profileImageUrl,
-      };
-}
-
 class ChatListContainer extends StatefulWidget {
   const ChatListContainer({Key? key}) : super(key: key);
 
@@ -201,46 +181,54 @@ class ChatListContainer extends StatefulWidget {
 class _ChatListContainerState extends State<ChatListContainer> {
   static const String TAG = "MessageRecieverContainer";
 
-  List<Chat> chatList = [
-    Chat(
-        username: "Hasan Masum",
-        userId: "test",
-        profileImageUrl: "profileImageUrl"),
-    Chat(username: "Masum", userId: "test", profileImageUrl: "profileImageUrl")
-  ];
+  List<Chat> chatList = [];
 
   @override
   Widget build(BuildContext context) {
     Log.d(TAG, "drawing total ${chatList.length}");
-    return ListView.separated(
-      shrinkWrap: true,
-      itemBuilder: ((context, index) {
-        if (index == chatList.length) return Container();
+    return FutureBuilder(
+      future: Provider.of<ChatProvider>(context, listen: false).getChats(),
+      builder:
+          (BuildContext context, AsyncSnapshot<ProviderResponse> snapshot) {
+        if (!snapshot.hasData) return SizedBox.shrink();
+        ProviderResponse response = snapshot.data!;
+        if (!response.success) return const SizedBox.shrink();
 
-        Chat chat = chatList[index];
-        return Row(
-          children: [
-            SizedBox(
-              width: 20,
-            ),
-            ProfilePictureFromName(
-              name: chat.username,
-              radius: 20,
-              fontsize: 14,
-              characterCount: 2,
-              random: true,
-            ),
-            SizedBox(
-              width: 20,
-            ),
-            Text(chat.username)
-          ],
+        chatList = response.data;
+
+        Log.d(TAG, "Chat list size: ${chatList.length}");
+
+        return ListView.separated(
+          shrinkWrap: true,
+          itemBuilder: ((context, index) {
+            if (index == chatList.length) return Container();
+
+            Chat chat = chatList[index];
+            return Row(
+              children: [
+                SizedBox(
+                  width: 20,
+                ),
+                ProfilePictureFromName(
+                  name: chat.userName,
+                  radius: 20,
+                  fontsize: 14,
+                  characterCount: 2,
+                  random: true,
+                ),
+                SizedBox(
+                  width: 20,
+                ),
+                Text(chat.userName)
+              ],
+            );
+          }),
+          separatorBuilder: (context, index) {
+            return const Divider();
+          },
+          itemCount: chatList.length + 1,
         );
-      }),
-      separatorBuilder: (context, index) {
-        return const Divider();
       },
-      itemCount: chatList.length + 1,
     );
   }
 }
