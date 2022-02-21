@@ -6,7 +6,9 @@ import 'package:bms_project/providers/provider_response.dart';
 import 'package:bms_project/screen/blood_post_view_screen.dart';
 import 'package:bms_project/utils/auth_util.dart';
 import 'package:bms_project/utils/dummy.dart';
+import 'package:bms_project/utils/token.dart';
 import 'package:bms_project/widgets/common/margin.dart';
+import 'package:bms_project/widgets/common/profile_picture.dart';
 import 'package:bms_project/widgets/homepage/left_panel/create_post.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -254,8 +256,20 @@ class UserWidget extends StatelessWidget {
           CircleAvatar(
             //radius: 200,
             child: ClipOval(
-              child: Image.network(
-                'https://avatars.githubusercontent.com/u/55390870?v=4',
+              child: FutureBuilder(
+                future: AuthToken.parseUserName(),
+                builder: (context, AsyncSnapshot<String> snapshot) {
+                  if (snapshot.hasData) {
+                    String username = snapshot.data ?? "";
+                    return ProfilePictureFromName(
+                        name: username,
+                        radius: 30,
+                        fontsize: 15,
+                        characterCount: 2);
+                  } else {
+                    return Container();
+                  }
+                },
               ),
             ),
           ),
