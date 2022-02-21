@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:bms_project/modals/comment_model.dart';
 import 'package:bms_project/providers/provider_response.dart';
+import 'package:bms_project/utils/debug.dart';
 import 'package:bms_project/utils/environment.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:http/http.dart' as http;
@@ -53,19 +54,22 @@ class CommentProvider with ChangeNotifier {
     }
   }
 
-  Future<ProviderResponse> getComments(String post_id) async {
-    String url = "${Environment.apiUrl}/comment/$post_id";
+  Future<ProviderResponse> getComments(String postId) async {
+    String url = "${Environment.apiUrl}/comment/$postId";
     debugPrint("fetching from: $url");
     try {
       Map<String, String> headers = await Constants.getHeaders();
       http.Response response = await http.get(Uri.parse(url), headers: headers);
-      debugPrint(response.body);
+
+      ///debugPrint(response.body);
       Map data = json.decode(response.body);
       if (data['code'] == HttpSatusCode.OK) {
         List commentJsonList = data['data'];
         List<Comment> commentList = commentJsonList.map((e) {
           return Comment.fromJson(e);
         }).toList();
+        Log.d(TAG,
+            "total comment fetched ${commentList.length} for post $postId");
         return ProviderResponse(
             success: true, message: "ok", data: commentList);
       } else {

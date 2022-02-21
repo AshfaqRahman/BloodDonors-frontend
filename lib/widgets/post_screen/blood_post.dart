@@ -11,6 +11,7 @@ import 'package:bms_project/utils/debug.dart';
 import 'package:bms_project/utils/token.dart';
 import 'package:bms_project/widgets/common/decorations.dart';
 import 'package:bms_project/widgets/common/margin.dart';
+import 'package:bms_project/widgets/common/profile_picture.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -172,16 +173,11 @@ class PostCreatorInfoWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(mainAxisAlignment: MainAxisAlignment.start, children: [
-      CircleAvatar(
-        //radius: 200,
-        child: ClipOval(
-          child: Icon(
-            Icons.account_circle,
-            size: 40,
-            color: Colors.primaries[Random().nextInt(Colors.primaries.length)],
-          ),
-        ),
-      ),
+      ProfilePictureFromName(
+          name: postData!.userName,
+          radius: 25,
+          fontsize: 15,
+          characterCount: 2),
       const HorizontalSpacing(20),
       Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -231,7 +227,7 @@ class _InteractionSectionState extends State<InteractionSection> {
         totalReactCnt = reactList.length;
         String userId = await AuthToken.parseUserId();
         for (int i = 0; i < reactList.length; i++) {
-          Log.d(TAG, "user ${reactList[i].userId} likes the post");
+          //Log.d(TAG, "user ${reactList[i].userId} likes the post");
           if (reactList[i].userId == userId) {
             Log.d(TAG, "$userId likes the post ${widget.bloodPost.postId}");
             isLiked = true;
@@ -319,7 +315,7 @@ class _InteractionSectionState extends State<InteractionSection> {
     ProviderResponse response =
         await Provider.of<CommentProvider>(context, listen: false)
             .getComments(postId);
-    Log.d(TAG, response.toJson());
+    //Log.d(TAG, response.toJson());
     return response.success ? response.data : [];
   }
 
@@ -381,15 +377,26 @@ class _InteractionSectionState extends State<InteractionSection> {
           builder:
               (BuildContext context, AsyncSnapshot<List<Comment>> snapshot) {
             if (snapshot.hasData) {
-              Log.d(TAG, "inside snapshot");
-              Log.d(TAG, "data size: ${snapshot.data!}");
+              Log.d(TAG,
+                  "total comments of post ${widget.bloodPost.postId}: ${snapshot.data!.length}");
               totalComments = snapshot.data!.length;
               return showComment
                   ? Column(
                       children: [
-                        WriteCommentWidget(
-                          postId: widget.bloodPost.postId,
-                          onCommentAdd: _onCommentAdd,
+                        FutureBuilder(
+                          future: AuthToken.parseUserName(),
+                          builder: (context, AsyncSnapshot<String> snapshot) {
+                            if (!snapshot.hasData) return Container();
+
+                            String userName = snapshot.data ?? "";
+                            if (userName == "") return Container();
+
+                            return WriteCommentWidget(
+                              postId: widget.bloodPost.postId,
+                              onCommentAdd: _onCommentAdd,
+                              userName: userName,
+                            );
+                          },
                         ),
                         const VerticalSpacing(10),
                         const Divider(
@@ -468,17 +475,11 @@ class CommentWidget extends StatelessWidget {
         ? Container()
         : Row(
             children: [
-              CircleAvatar(
-                //radius: 200,
-                child: ClipOval(
-                  child: Icon(
-                    Icons.account_circle,
-                    size: 30,
-                    color: Colors
-                        .primaries[Random().nextInt(Colors.primaries.length)],
-                  ),
-                ),
-              ),
+              ProfilePictureFromName(
+                  name: comment!.userName,
+                  radius: 20,
+                  fontsize: 15,
+                  characterCount: 2),
               const HorizontalSpacing(10),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -513,9 +514,11 @@ class WriteCommentWidget extends StatelessWidget {
     Key? key,
     required this.postId,
     required this.onCommentAdd,
+    required this.userName,
   }) : super(key: key);
 
   String postId;
+  final String userName;
 
   TextEditingController _commentTextController = TextEditingController();
 
@@ -525,17 +528,8 @@ class WriteCommentWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        CircleAvatar(
-          //radius: 200,
-          child: ClipOval(
-            child: Icon(
-              Icons.account_circle,
-              size: 30,
-              color:
-                  Colors.primaries[Random().nextInt(Colors.primaries.length)],
-            ),
-          ),
-        ),
+        ProfilePictureFromName(
+            name: userName, radius: 20, fontsize: 15, characterCount: 2),
         HorizontalSpacing(15),
         Flexible(
             child: Container(

@@ -74,7 +74,7 @@ class PostReactProvider with ChangeNotifier {
         headers: await Constants.getHeaders(),
       );
 
-      Log.d(TAG, response.body);
+      //Log.d(TAG, response.body);
 
       Map data = json.decode(response.body);
       if (data['code'] == HttpSatusCode.OK) {

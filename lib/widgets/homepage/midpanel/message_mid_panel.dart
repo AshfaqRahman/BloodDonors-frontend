@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:bms_project/utils/environment.dart';
+import 'package:bms_project/utils/token.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
@@ -34,14 +35,19 @@ class _ChatMidPanelState extends State<ChatMidPanel> {
     connectDartSocketClient();
   }
 
-  void _sendMessage(String msg) {
+  Future<void> _sendMessage(String msg) async {
     Log.d(TAG, "_onMessageSent: $msg");
 
+    //String recieverId = "33ab3559-4cc1-48d5-a005-1cbf9b0f3922";
+    //String recieverId = "496f3e00-c53e-46af-8071-1cfd288e4e14";
+    String recieverId = "74f4d938-67e2-4a7e-ba31-59238d7044bf";
+   // String receiverId = "6fb76fc5-7d3a-48ed-9964-50ef89711475";
+
     ChatMessage chatMessage = ChatMessage(
-        senderId: userId ? "1" : "2",
-        sender: "Masum",
-        receiver: "Abrar",
-        receiverId: userId ? "2" : "1",
+        senderId: await AuthToken.parseUserId(),
+        sender: await AuthToken.parseUserName(),
+        receiver: "hasan",
+        receiverId: recieverId,
         message: msg,
         sentTime: DateTime.now());
     setState(() {
@@ -103,10 +109,17 @@ class _ChatMidPanelState extends State<ChatMidPanel> {
             child: Column(
               children: [
                 Expanded(
-                  child: MessageContainer(
-                    messages: messages,
-                    messageListController: _messagListController,
-                    userId: userId ? "1" : "2",
+                  child: FutureBuilder(
+                    future: AuthToken.parseUserId(),
+                    builder: (context, AsyncSnapshot<String> snapshot) {
+                      String userId = snapshot.data ?? "";
+                      if (userId == "") return Container();
+                      return MessageContainer(
+                        messages: messages,
+                        messageListController: _messagListController,
+                        userId: userId,
+                      );
+                    },
                   ),
                 ),
                 Container(
@@ -123,9 +136,9 @@ class _ChatMidPanelState extends State<ChatMidPanel> {
   }
 
   void connectDartSocketClient() {
-    Log.d(TAG, "connecting to socket client sever: ${Environment.apiUrl}");
+    Log.d(TAG, "connecting to socket client sever: ${Environment.SOCKET_URL}");
     socket = sio.io(
-        Environment.apiUrl,
+        Environment.SOCKET_URL,
         sio.OptionBuilder()
             .setTransports(['websocket']) // for Flutter or Dart VM
             .disableAutoConnect()
@@ -134,9 +147,9 @@ class _ChatMidPanelState extends State<ChatMidPanel> {
     socket.connect();
     Log.d(TAG, "socket connected at ${socket.connected}");
     //socket.onConnect((data) => null)
-    socket.onConnect((data) {
+    socket.onConnect((data) async {
       Log.d(TAG, "connected");
-      socket.emit(SocketEvents.USER_REGISTER, userId ? "1" : "2");
+      socket.emit(SocketEvents.USER_REGISTER, await AuthToken.parseUserId());
     });
 
     addSocketMessageListener();
@@ -278,6 +291,7 @@ class MessageItem extends StatelessWidget {
   Widget build(BuildContext context) {
     DateFormat dateFormat = DateFormat('dd MMM yyyy, hh:mma');
     TextTheme textTheme = Theme.of(context).textTheme;
+
     sentByMe = chatMessage.senderId == userId;
     Color msgTextColor = sentByMe ? Colors.white : Colors.black;
     Color timeTextColor = sentByMe ? Colors.white70 : Colors.black87;
