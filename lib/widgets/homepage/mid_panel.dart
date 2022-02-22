@@ -2,6 +2,7 @@ import 'package:bms_project/screen/auth_screen.dart';
 import 'package:bms_project/widgets/homepage/left_panel.dart';
 import 'package:bms_project/widgets/homepage/midpanel/home_mid_panel.dart';
 import 'package:bms_project/widgets/homepage/midpanel/message_mid_panel.dart';
+import 'package:bms_project/widgets/homepage/midpanel/notification_mid_panel.dart';
 import 'package:flutter/material.dart';
 
 class MidPanel extends StatefulWidget {
@@ -23,13 +24,9 @@ class _MidPanelState extends State<MidPanel> {
       case LeftPanelOption.HOME:
         return HomeMidPanel();
       case LeftPanelOption.MESSAGE:
-        return Container(
-          child: ChatMidPanel(),
-        );
+        return ChatMidPanel();
       case LeftPanelOption.NOTIFICATION:
-        return Container(
-          child: Text("Notification"),
-        );
+        return NotificationMidPanel();
       case LeftPanelOption.SEARCH_BLOOD:
         return Container(
           child: Text("s b"),

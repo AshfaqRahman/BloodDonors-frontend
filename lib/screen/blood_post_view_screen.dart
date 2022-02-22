@@ -16,6 +16,14 @@ class BloodPostScreen extends StatelessWidget {
     Log.d(TAG, "BloodPostScreen");
     Log.d(TAG, data?.toJson());
     return Scaffold(
+      appBar: AppBar(
+        title: Text("Blood Donors",
+            style: Theme.of(context)
+                .textTheme
+                .headline5
+                ?.copyWith(fontWeight: FontWeight.bold, color: Colors.white)),
+        
+      ),
       body: SingleChildScrollView(
         child: Container(
           alignment: Alignment.topCenter,

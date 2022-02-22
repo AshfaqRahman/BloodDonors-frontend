@@ -1,6 +1,9 @@
+import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class Constants {
+  static DateFormat dateFormat = DateFormat('dd MMM yyyy, hh:mma');
+
   static Future<String> getToken() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String token = prefs.getString("token") as String;

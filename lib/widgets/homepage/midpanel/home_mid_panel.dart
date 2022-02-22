@@ -22,6 +22,11 @@ class _HomeMidPanelState extends State<HomeMidPanel> {
         future:
             Provider.of<BloodPostProvider>(context, listen: false).getPosts(),
         builder: (BuildContext ctx, AsyncSnapshot<ProviderResponse> snapshot) {
+          
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
           if (snapshot.hasData) {
             List<BloodPost> postList =
                 snapshot.data!.success ? snapshot.data!.data : [];
@@ -32,9 +37,11 @@ class _HomeMidPanelState extends State<HomeMidPanel> {
                 controller: ScrollController(),
                 children: postList.map((BloodPost post) {
                   return Container(
-                    padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 35),
-                    child: BloodPostWidget(postData: post,)
-                    );
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 5, horizontal: 35),
+                      child: BloodPostWidget(
+                        postData: post,
+                      ));
                 }).toList(),
               ),
             );
