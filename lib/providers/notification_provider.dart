@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:bms_project/modals/notification_model.dart';
 import 'package:bms_project/providers/provider_response.dart';
+import 'package:bms_project/utils/token.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:http/http.dart';
 
@@ -9,7 +10,7 @@ import '../utils/constant.dart';
 import '../utils/debug.dart';
 import '../utils/environment.dart';
 
-class NotificationProvider with ChangeNotifier{
+class NotificationProvider with ChangeNotifier {
   static const String TAG = "NotificationProvider";
 
   Future<ProviderResponse> getNotications() async {
@@ -28,9 +29,18 @@ class NotificationProvider with ChangeNotifier{
       Map data = json.decode(response.body);
       if (data['code'] == HttpSatusCode.OK) {
         List notificationJsonList = data['data'];
-        List<NotificationModel> notificationList = notificationJsonList.map((e) {
-          return NotificationModel.fromJson(e);
-        }).toList();
+
+        List<NotificationModel> notificationList = [];
+
+        String userId = await AuthToken.parseUserId();
+        for (int i = 0; i < notificationJsonList.length; i++) {
+          NotificationModel notificationModel =
+              NotificationModel.fromJson(notificationJsonList[i]);
+
+          if (notificationModel.actorId != userId)
+            notificationList.add(notificationModel);
+        }
+        
         Log.d(TAG, "$fName Total notifications : ${notificationList.length}");
         return ProviderResponse(
           success: true,
