@@ -124,13 +124,15 @@ class _ChatMidPanelState extends State<ChatMidPanel> {
           //message section
           flex: 2,
           child: Container(
-            padding: const EdgeInsets.all(5),
             //  color: Colors.yellow,
             //padding: EdgeInsets.symmetric(horizontal: width * 0.2),
             child: activeChat == null
                 ? const NoChatSelectedWidget()
                 : Column(
                     children: [
+                      MessageContainerBarWidget(
+                        activeChat: activeChat!,
+                      ),
                       Expanded(
                         child: FutureBuilder(
                           future: AuthToken.parseUserId(),
@@ -140,7 +142,7 @@ class _ChatMidPanelState extends State<ChatMidPanel> {
                             return MessageContainer(
                               messages: messages,
                               messageListController: _messagListController,
-                              userId: userId,
+                              activeChat: activeChat!,
                             );
                           },
                         ),
@@ -188,6 +190,49 @@ class _ChatMidPanelState extends State<ChatMidPanel> {
         Log.d(TAG, "message now: ${messages.length}");
       });
     });
+  }
+}
+
+class MessageContainerBarWidget extends StatelessWidget {
+  MessageContainerBarWidget({
+    Key? key,
+    required this.activeChat,
+  }) : super(key: key);
+
+  Chat activeChat;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 56,
+      decoration: const BoxDecoration(color: Colors.white, boxShadow: [
+        BoxShadow(
+          color: Colors.grey,
+          offset: Offset(0.0, 1.0), //(x,y)
+          blurRadius: 2.0,
+        ),
+      ]),
+      child: Row(children: [
+        const SizedBox(
+          width: 15,
+        ),
+        ProfilePictureFromName(
+            name: activeChat.userName,
+            radius: 20,
+            fontsize: 15,
+            characterCount: 2),
+        const SizedBox(
+          width: 15,
+        ),
+        Text(
+          activeChat.userName,
+          style: Theme.of(context)
+              .textTheme
+              .titleLarge
+              ?.copyWith(fontWeight: FontWeight.bold),
+        ),
+      ]),
+    );
   }
 }
 
@@ -265,13 +310,13 @@ class _ChatListContainerState extends State<ChatListContainer> {
 class MessageContainer extends StatelessWidget {
   static const String TAG = "MessageContainer";
   List<ChatMessage> messages;
-  String userId;
+  Chat activeChat;
 
   MessageContainer({
     Key? key,
     required this.messages,
     required this.messageListController,
-    required this.userId,
+    required this.activeChat,
   }) : super(key: key);
 
   ScrollController messageListController;
@@ -287,7 +332,7 @@ class MessageContainer extends StatelessWidget {
         return idx != messages.length
             ? MessageItem(
                 chatMessage: messages[idx],
-                userId: userId,
+                userId: activeChat.userId,
               )
             : Container(
                 height: 70,
