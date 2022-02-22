@@ -2,7 +2,7 @@
 import 'package:latlong2/latlong.dart';
 import 'package:bms_project/modals/location.dart';
 import 'package:bms_project/modals/user.dart';
-import 'package:bms_project/providers/users.dart';
+import 'package:bms_project/providers/users_provider.dart';
 import 'package:bms_project/widgets/common/blood_group_selection.dart';
 import 'package:bms_project/widgets/common/location_input.dart';
 import 'package:flutter/material.dart';
@@ -146,7 +146,7 @@ class _SignUpFormState extends State<SignUpForm> {
         bloodGroup: _initValues['blood group']);
     // print("printing user input.");
     // print(x.toMap());
-    Provider.of<Users>(context, listen: false).signUpUser(x).then((value) {
+    Provider.of<UsersProvider>(context, listen: false).signUpUser(x).then((value) {
       if (value['success'] == true) {
         showAlertDialog(context, "signed up", "you registered successfully!",
                 flag: true)

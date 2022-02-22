@@ -1,7 +1,7 @@
 import 'dart:ui';
 
 import 'package:bms_project/modals/user.dart';
-import 'package:bms_project/providers/users.dart';
+import 'package:bms_project/providers/users_provider.dart';
 import 'package:bms_project/utils/auth_util.dart';
 import 'package:bms_project/utils/debug.dart';
 import 'package:bms_project/widgets/homepage/left_panel.dart';

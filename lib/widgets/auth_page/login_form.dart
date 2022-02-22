@@ -1,5 +1,5 @@
 import 'package:bms_project/modals/user.dart';
-import 'package:bms_project/providers/users.dart';
+import 'package:bms_project/providers/users_provider.dart';
 import 'package:bms_project/screen/home_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -36,7 +36,7 @@ class _LoginFormState extends State<LoginForm> {
       ),
       onPressed: () {
         if (flag) {
-          Provider.of<Users>(context, listen: false)
+          Provider.of<UsersProvider>(context, listen: false)
               .getUserData()
               .then((value) {
             // print(value);
@@ -89,7 +89,7 @@ class _LoginFormState extends State<LoginForm> {
 
     print('$TAG : m');
 
-    Provider.of<Users>(context, listen: false).signInUser(m).then((value) {
+    Provider.of<UsersProvider>(context, listen: false).signInUser(m).then((value) {
       if (value['success'] == true) {
         //showAlertDialog(context, "signed in", value[1], flag: true);
         Navigator.of(context).pushNamed(HomeScreen.route);

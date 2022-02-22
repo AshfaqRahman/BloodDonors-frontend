@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:bms_project/modals/location.dart';
 import 'package:bms_project/modals/user.dart';
+import 'package:bms_project/utils/debug.dart';
 import 'package:bms_project/utils/environment.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -10,7 +11,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 // import '../models/http_exception.dart';
 // import './product.dart';
 
-class Users with ChangeNotifier {
+class UsersProvider with ChangeNotifier {
+  static const String TAG = "Users";
+
   late User user;
   Future<dynamic> signUpUser(User user) async {
     var url = '${Environment.apiUrl}/auth/register';
@@ -62,7 +65,7 @@ class Users with ChangeNotifier {
             'access-control-allow-origin': '*',
             'content-type': 'application/json'
           });
-      print("yo2");
+      Log.d(TAG, "signInUser: ${response.body}");
       var data = json.decode(response.body);
       print(data);
       var code = data['code'];

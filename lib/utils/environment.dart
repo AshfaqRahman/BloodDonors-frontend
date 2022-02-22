@@ -2,11 +2,12 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 // https://developer.school/tutorials/how-to-use-environment-variables-with-flutter-dotenv
 class Environment {
+  static const bool debug = true;
   static String get apiUrl {
-    return dotenv.env['API_URL'] ?? "http://localhost:8080/api/";
+    return debug ? dotenv.env['API_URL']! : dotenv.env['API_URL_REMOTE']!;
   }
 
   static String get SOCKET_URL {
-    return dotenv.env['SOCKET_URL'] ?? "no";
+    return debug ? dotenv.env['SOCKET_URL']! : dotenv.env['SOCKET_URL_REMOTE']!;
   }
 }

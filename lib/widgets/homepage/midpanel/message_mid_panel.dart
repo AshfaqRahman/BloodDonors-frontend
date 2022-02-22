@@ -29,7 +29,9 @@ class _ChatMidPanelState extends State<ChatMidPanel> {
 
   bool userId = true;
 
-  List<ChatMessage> messages = [];
+  // state variables
+  Chat? activeChat = null; // currently acitve chat with wiche user is chating
+  List<ChatMessage> messages = []; // messages
 
   ScrollController _messagListController = ScrollController();
 
@@ -39,24 +41,37 @@ class _ChatMidPanelState extends State<ChatMidPanel> {
     connectDartSocketClient();
   }
 
-  Future<void> _sendMessage(String msg) async {
-    Log.d(TAG, "_onMessageSent: $msg");
+  void _activeChatChanged(Chat chat) {
+    activeChat = chat; // chage the acitve chat
+    messages.clear();
+    Provider.of<ChatProvider>(context, listen: false)
+        .getMessages(activeChat!.userId)
+        .then((ProviderResponse response) {
+      if (response.success) {
+        setState(() {
+          messages = response.data;
+        });
+      }
+    });
+  }
 
-    //String recieverId = "33ab3559-4cc1-48d5-a005-1cbf9b0f3922";
-    //String recieverId = "496f3e00-c53e-46af-8071-1cfd288e4e14";
-    String recieverId = "74f4d938-67e2-4a7e-ba31-59238d7044bf";
-    // String receiverId = "6fb76fc5-7d3a-48ed-9964-50ef89711475";
+  Future<void> _sendMessage(String msg) async {
+    Log.d(TAG, "_sendMessage: $msg");
+    String recieverId = activeChat?.userId ?? "";
+    if (userId == "") {
+      Log.d(TAG, "_sendMessage: to chat is selected as receiver");
+      return;
+    }
 
     ChatMessage chatMessage = ChatMessage(
         senderId: await AuthToken.parseUserId(),
         sender: await AuthToken.parseUserName(),
-        receiver: "hasan",
+        receiver: activeChat!.userName,
         receiverId: recieverId,
         message: msg,
         sentTime: DateTime.now());
     setState(() {
-      messages.add(chatMessage);
-      _scrollToBottom();
+      messages.insert(0, chatMessage);
     });
 
     // send to server
@@ -95,11 +110,13 @@ class _ChatMidPanelState extends State<ChatMidPanel> {
                 height: 15,
                 thickness: 1,
               ),
-              ChatListContainer()
+              ChatListContainer(
+                onChatSelected: _activeChatChanged,
+              )
             ]),
           ),
         ),
-        VerticalDivider(
+        const VerticalDivider(
           thickness: 1,
           width: 1,
         ),
@@ -110,29 +127,31 @@ class _ChatMidPanelState extends State<ChatMidPanel> {
             padding: const EdgeInsets.all(5),
             //  color: Colors.yellow,
             //padding: EdgeInsets.symmetric(horizontal: width * 0.2),
-            child: Column(
-              children: [
-                Expanded(
-                  child: FutureBuilder(
-                    future: AuthToken.parseUserId(),
-                    builder: (context, AsyncSnapshot<String> snapshot) {
-                      String userId = snapshot.data ?? "";
-                      if (userId == "") return Container();
-                      return MessageContainer(
-                        messages: messages,
-                        messageListController: _messagListController,
-                        userId: userId,
-                      );
-                    },
+            child: activeChat == null
+                ? const NoChatSelectedWidget()
+                : Column(
+                    children: [
+                      Expanded(
+                        child: FutureBuilder(
+                          future: AuthToken.parseUserId(),
+                          builder: (context, AsyncSnapshot<String> snapshot) {
+                            String userId = snapshot.data ?? "";
+                            if (userId == "") return Container();
+                            return MessageContainer(
+                              messages: messages,
+                              messageListController: _messagListController,
+                              userId: userId,
+                            );
+                          },
+                        ),
+                      ),
+                      Container(
+                        child: SendMessageContainer(
+                          sendMessage: _sendMessage,
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-                Container(
-                  child: SendMessageContainer(
-                    sendMessage: _sendMessage,
-                  ),
-                ),
-              ],
-            ),
           ),
         ),
       ],
@@ -161,18 +180,22 @@ class _ChatMidPanelState extends State<ChatMidPanel> {
 
   void addSocketMessageListener() {
     socket.on(SocketEvents.RECEIVE_MESSAGE, (data) {
-      Log.d(TAG, "addSocketMessageListener $data");
+      Log.d(TAG, "addSocketMessageListener(): $data");
       ChatMessage chatMessage = ChatMessage.fromJson(data);
       setState(() {
-        messages.add(chatMessage);
-        _scrollToBottom();
+        Log.d(TAG, "message before: ${messages.length}");
+        messages.insert(0, chatMessage);
+        Log.d(TAG, "message now: ${messages.length}");
       });
     });
   }
 }
 
 class ChatListContainer extends StatefulWidget {
-  const ChatListContainer({Key? key}) : super(key: key);
+  const ChatListContainer({Key? key, required this.onChatSelected})
+      : super(key: key);
+
+  final Function onChatSelected;
 
   @override
   _ChatListContainerState createState() => _ChatListContainerState();
@@ -202,25 +225,31 @@ class _ChatListContainerState extends State<ChatListContainer> {
           shrinkWrap: true,
           itemBuilder: ((context, index) {
             if (index == chatList.length) return Container();
-
             Chat chat = chatList[index];
-            return Row(
-              children: [
-                SizedBox(
-                  width: 20,
-                ),
-                ProfilePictureFromName(
-                  name: chat.userName,
-                  radius: 20,
-                  fontsize: 14,
-                  characterCount: 2,
-                  random: true,
-                ),
-                SizedBox(
-                  width: 20,
-                ),
-                Text(chat.userName)
-              ],
+            return InkWell(
+              onTap: () {
+                Log.d(
+                    TAG, "selected user ${chat.userName} , id: ${chat.userId}");
+                widget.onChatSelected(chat);
+              },
+              child: Row(
+                children: [
+                  SizedBox(
+                    width: 20,
+                  ),
+                  ProfilePictureFromName(
+                    name: chat.userName,
+                    radius: 20,
+                    fontsize: 14,
+                    characterCount: 2,
+                    random: true,
+                  ),
+                  SizedBox(
+                    width: 20,
+                  ),
+                  Text(chat.userName)
+                ],
+              ),
             );
           }),
           separatorBuilder: (context, index) {
@@ -234,6 +263,7 @@ class _ChatListContainerState extends State<ChatListContainer> {
 }
 
 class MessageContainer extends StatelessWidget {
+  static const String TAG = "MessageContainer";
   List<ChatMessage> messages;
   String userId;
 
@@ -250,6 +280,7 @@ class MessageContainer extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListView.builder(
       shrinkWrap: true,
+      reverse: true,
       controller: messageListController,
       itemCount: messages.length + 1,
       itemBuilder: (BuildContext context, int idx) {
@@ -342,6 +373,20 @@ class SendMessageContainer extends StatelessWidget {
           Icons.send,
           color: Colors.white,
         ),
+      ),
+    );
+  }
+}
+
+class NoChatSelectedWidget extends StatelessWidget {
+  const NoChatSelectedWidget({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Text(
+        "Select a user to send message.",
+        style: Theme.of(context).textTheme.caption?.copyWith(fontSize: 20),
       ),
     );
   }

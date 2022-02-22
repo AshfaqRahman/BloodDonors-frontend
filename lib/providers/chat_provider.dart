@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:bms_project/modals/chat_message_model.dart';
 import 'package:bms_project/providers/provider_response.dart';
 import 'package:bms_project/utils/debug.dart';
 import 'package:bms_project/utils/environment.dart';
@@ -13,8 +14,9 @@ class ChatProvider with ChangeNotifier {
   static const String TAG = "ChatProvider";
 
   Future<ProviderResponse> getChats() async {
+    String fName = "getChats():";
     String url = "${Environment.apiUrl}/message/";
-    Log.d(TAG, "fetching from: $url");
+    Log.d(TAG, "$fName fetching from: $url");
 
     try {
       Response response = await get(
@@ -22,7 +24,7 @@ class ChatProvider with ChangeNotifier {
         headers: await Constants.getHeaders(),
       );
 
-      Log.d(TAG, response.body);
+      // Log.d(TAG,"$fName  ${response.body}");
 
       Map data = json.decode(response.body);
       if (data['code'] == HttpSatusCode.OK) {
@@ -41,6 +43,43 @@ class ChatProvider with ChangeNotifier {
             success: false, message: "error fetching reacts");
       }
     } catch (e) {
+      return ProviderResponse(success: false, message: "Chat list error");
+    }
+  }
+
+  Future<ProviderResponse> getMessages(String userId) async {
+    String url = "${Environment.apiUrl}/message/$userId";
+    String fName = "getMessages(): ";
+    Log.d(TAG, "$fName fetching from: $url");
+
+    try {
+      Response response = await get(
+        Uri.parse(url),
+        headers: await Constants.getHeaders(),
+      );
+
+      //Log.d(TAG,"$fName  ${response.body}");
+
+      Map data = json.decode(response.body);
+      if (data['code'] == HttpSatusCode.OK) {
+        List chatMessageJsonList = data['data'];
+        List<ChatMessage> chatMessageList = chatMessageJsonList.map((e) {
+          return ChatMessage.fromJson(e);
+        }).toList();
+        Log.d(TAG, "$fName Total message : ${chatMessageList.length}");
+        return ProviderResponse(
+          success: true,
+          message: "ok",
+          data: chatMessageList,
+        );
+      } else {
+        Log.d(TAG, "$fName not http 200");
+        return ProviderResponse(
+            success: false, message: "error fetching reacts");
+      }
+    } catch (e) {
+      Log.d(TAG, "$fName error");
+      Log.d(TAG, "$fName ${e}");
       return ProviderResponse(success: false, message: "Chat list error");
     }
   }

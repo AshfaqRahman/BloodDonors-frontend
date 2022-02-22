@@ -12,7 +12,7 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:universal_html/html.dart';
 import 'package:universal_html/js.dart';
-import 'providers/users.dart';
+import 'providers/users_provider.dart';
 import 'dart:ui' as ui;
 import 'dart:io' show Platform;
 
@@ -32,7 +32,7 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider.value(
-          value: Users(),
+          value: UsersProvider(),
         ),
         ChangeNotifierProvider.value(
           value: BloodPostProvider(),
