@@ -1,7 +1,10 @@
+import 'package:bms_project/providers/donation_provider.dart';
 import 'package:bms_project/widgets/common/dialog_topbar_widget.dart';
 import 'package:bms_project/widgets/common/location_input.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 
 import '../../../modals/osm_model.dart';
 import '../../../utils/debug.dart';
@@ -16,24 +19,135 @@ class AddDonationDialog extends StatefulWidget {
 }
 
 class _AddDonationDialogState extends State<AddDonationDialog> {
+  static String TAG = "AddDonationDialog";
+
+  OsmLocation? selectedLocation;
+  String? selectedDate;
+
+  /**
+   * send donation to backend
+   */
+  void _saveDonation() async {
+    if (selectedLocation == null) {
+      Log.d(TAG, "_saveLocation(): location not selected!");
+      return;
+    }
+
+    if (selectedDate == null) {
+      Log.d(TAG, "_saveLocation(): date not selected!");
+      return;
+    }
+
+    Provider.of<DonationProvider>(context, listen: false)
+        .addDonation(selectedLocation!, selectedDate!);
+  }
+
   @override
   Widget build(BuildContext context) {
     double width = MediaQuery.of(context).size.width;
     double height = MediaQuery.of(context).size.height;
     return Container(
-        width: width * 0.3,
+        width: width * 0.4,
         child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
             const DialogTopBar(title: "Add donation"),
             const Divider(
               height: 10,
               thickness: 1,
             ),
+            const SizedBox(
+              height: 10,
+            ),
             InputLocation(
-              onLocationSelected: (location) {},
+              onLocationSelected: (OsmLocation location) {
+                Log.d(TAG, "selected location: ${location.displayName}");
+                selectedLocation = location;
+              },
+            ),
+            const SizedBox(
+              height: 15,
+            ),
+            DateInput(
+              onDateSelected: (date) {
+                Log.d(TAG, "selected date: $date");
+                selectedDate = date;
+              },
+            ),
+            SizedBox(
+              height: 15,
+            ),
+            SizedBox(
+              width: double.infinity,
+              height: height * 0.05,
+              child: ElevatedButton(
+                onPressed: () {
+                  _saveDonation();
+                },
+                child: const Text("ADD"),
+              ),
             ),
           ],
         ));
+  }
+}
+
+class DateInput extends StatefulWidget {
+  final Function onDateSelected;
+  const DateInput({Key? key, required this.onDateSelected}) : super(key: key);
+
+  @override
+  _DateInputState createState() => _DateInputState();
+}
+
+class _DateInputState extends State<DateInput> {
+  static const String TAG = "DateInput";
+
+  late String dateString;
+
+  TextEditingController dateTextController = TextEditingController();
+
+  @override
+  void initState() {
+    DateFormat dateFormat = DateFormat("yyyy-MM-dd");
+    dateString = dateFormat.format(DateTime.now());
+    //print(dateString);
+    super.initState();
+  }
+
+  @override
+  void openDatePickerDialog() async {
+    DateTime? newDate = await showDatePicker(
+      context: context,
+      initialDate: DateTime(
+          DateTime.now().year, DateTime.now().month, DateTime.now().day),
+      firstDate: DateTime(DateTime.now().year - 3, 1),
+      lastDate: DateTime.now(),
+      helpText: 'Select a date',
+    );
+
+    setState(() {
+      DateFormat dateFormat = DateFormat("yyyy-MM-dd");
+      dateString = dateFormat.format(newDate!);
+      Log.d(TAG, "selected date: $dateString");
+      dateTextController.text = dateString;
+      widget.onDateSelected(dateString);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    ThemeData themeData = Theme.of(context);
+    return MyTextField(
+      hint: "Donation Date",
+      onSubmitText: (value) {},
+      onTap: openDatePickerDialog,
+      textController: dateTextController,
+      suffixIcon: const Icon(
+        Icons.calendar_today,
+        color: Colors.white,
+      ),
+    );
   }
 }
 
@@ -44,10 +158,11 @@ class MyTextField extends StatelessWidget {
     required this.hint,
     required this.onSubmitText,
     required this.suffixIcon,
+    required this.textController,
     this.onTap,
   }) : super(key: key);
 
-  TextEditingController msgController = TextEditingController();
+  TextEditingController textController;
   final String hint;
   final Function onSubmitText;
   final Function? onTap;
@@ -63,14 +178,7 @@ class MyTextField extends StatelessWidget {
       },
       style: Theme.of(context).textTheme.subtitle1,
       cursorColor: Theme.of(context).primaryColor,
-      controller: msgController,
-      onSubmitted: (value) {
-        Log.d(TAG, value);
-        if (value != "") {
-          onSubmitText(value);
-          msgController.text = "";
-        }
-      },
+      controller: textController,
       decoration: InputDecoration(
         labelText: hint,
         contentPadding: const EdgeInsets.symmetric(horizontal: 12),
@@ -100,11 +208,8 @@ class MyTextField extends StatelessWidget {
             ),
             child: IconButton(
               onPressed: () {
-                String msg = msgController.text;
-                if (msg != "") {
-                  onSubmitText(msg);
-                  msgController.text = "";
-                }
+                Log.d(TAG, "$hint: tapped");
+                if (onTap != null) onTap!();
               },
               icon: suffixIcon,
             ),

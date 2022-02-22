@@ -3,6 +3,7 @@ import 'package:bms_project/widgets/homepage/left_panel.dart';
 import 'package:bms_project/widgets/homepage/midpanel/home_mid_panel.dart';
 import 'package:bms_project/widgets/homepage/midpanel/message_mid_panel.dart';
 import 'package:bms_project/widgets/homepage/midpanel/notification_mid_panel.dart';
+import 'package:bms_project/widgets/homepage/midpanel/profile_mid_panel.dart';
 import 'package:flutter/material.dart';
 
 class MidPanel extends StatefulWidget {
@@ -18,9 +19,7 @@ class _MidPanelState extends State<MidPanel> {
   Widget build(BuildContext context) {
     switch (widget.option) {
       case LeftPanelOption.PROFILE:
-        return Container(
-          child: Text("Profile"),
-        );
+        return ProfileMidPanel();
       case LeftPanelOption.HOME:
         return HomeMidPanel();
       case LeftPanelOption.MESSAGE:

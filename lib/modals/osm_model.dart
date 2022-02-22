@@ -21,7 +21,7 @@ class OsmLocation {
 
   factory OsmLocation.fromJson(Map<String, dynamic> json) {
     return OsmLocation(
-      id: json["id"],
+      id: json["id"]??"",
       latitude: json["latitude"].toDouble(),
       longitude: json["longitude"].toDouble(),
       displayName: json["description"]??"",
