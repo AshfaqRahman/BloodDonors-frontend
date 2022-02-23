@@ -4,6 +4,7 @@ import 'package:bms_project/providers/comment_provider.dart';
 import 'package:bms_project/providers/donation_provider.dart';
 import 'package:bms_project/providers/notification_provider.dart';
 import 'package:bms_project/providers/post_react_provider.dart';
+import 'package:bms_project/providers/search_provider.dart';
 import 'package:bms_project/screen/home_screen.dart';
 import 'package:bms_project/screen/auth_screen.dart';
 import 'package:bms_project/screen/blood_post_view_screen.dart';
@@ -46,7 +47,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider.value(value: ChatProvider()),
         ChangeNotifierProvider.value(value: NotificationProvider()),
         ChangeNotifierProvider.value(value: DonationProvider()),
-        
+        ChangeNotifierProvider.value(value: SearchProvider()),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,

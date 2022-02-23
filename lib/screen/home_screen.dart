@@ -85,13 +85,13 @@ class _HomeScreenState extends State<HomeScreen> {
                     width: MediaQuery.of(context).size.width * .005,
                   ),
                   Container(
-                    width: MediaQuery.of(context).size.width * .59,
+                    width: MediaQuery.of(context).size.width * (.59+.2),
                     child: Container(
                       child: MidPanel(midPanelIndex),
                       decoration: BoxDecoration(color: Color(0xe5e5e5)),
                     ),
                   ),
-                  VerticalDivider(
+                  /* VerticalDivider(
                     width: MediaQuery.of(context).size.width * .005,
                   ),
                   Container(
@@ -100,7 +100,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       child: Text("first part"),
                       //decoration: BoxDecoration(color: Colors.amberAccent),
                     ),
-                  ),
+                  ), */
                 ],
               ),
             )

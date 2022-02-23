@@ -1,5 +1,6 @@
 import 'package:bms_project/screen/auth_screen.dart';
 import 'package:bms_project/widgets/homepage/left_panel.dart';
+import 'package:bms_project/widgets/homepage/midpanel/blood_search_mid_panel.dart';
 import 'package:bms_project/widgets/homepage/midpanel/home_mid_panel.dart';
 import 'package:bms_project/widgets/homepage/midpanel/message_mid_panel.dart';
 import 'package:bms_project/widgets/homepage/midpanel/notification_mid_panel.dart';
@@ -27,9 +28,7 @@ class _MidPanelState extends State<MidPanel> {
       case LeftPanelOption.NOTIFICATION:
         return const NotificationMidPanel();
       case LeftPanelOption.SEARCH_BLOOD:
-        return Container(
-          child: Text("s b"),
-        );
+        return BloodSearchMidPanel();
       case LeftPanelOption.EVENTS:
         return Container(
           child: Text("events"),

@@ -74,7 +74,7 @@ class _LeftPanelState extends State<LeftPanel> {
       'icon': FontAwesomeIcons.search,
       'title': "Search blood"
     },
-    {
+    /* {
       'index': LeftPanelOption.EVENTS,
       'icon': FontAwesomeIcons.calendar,
       'title': "Events"
@@ -83,7 +83,7 @@ class _LeftPanelState extends State<LeftPanel> {
       'index': LeftPanelOption.BOOKMARKS,
       'icon': FontAwesomeIcons.bookmark,
       'title': "Bookmarks"
-    },
+    }, */
     {
       'index': LeftPanelOption.SETTINGS,
       'icon': FontAwesomeIcons.cog,
