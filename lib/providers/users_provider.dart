@@ -1,12 +1,16 @@
 import 'dart:convert';
 
 import 'package:bms_project/modals/location.dart';
-import 'package:bms_project/modals/user.dart';
+import 'package:bms_project/modals/user_model.dart';
+import 'package:bms_project/providers/provider_response.dart';
 import 'package:bms_project/utils/debug.dart';
 import 'package:bms_project/utils/environment.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:http/http.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import '../utils/constant.dart';
 
 // import '../models/http_exception.dart';
 // import './product.dart';
@@ -97,114 +101,76 @@ class UsersProvider with ChangeNotifier {
     }
   }
 
-  Future<dynamic> getUserData() async {
+  Future<ProviderResponse> getUserData() async {
     // print("inside getUserData");
     var url = '${Environment.apiUrl}/user/me';
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String token = prefs.getString("token") as String;
+    String fName = "getUserData():";
+    Log.d(TAG, "$fName fetching from: $url");
+
     try {
-      http.Response response = await http.get(Uri.parse(url), headers: {
-        'access-control-allow-origin': '*',
-        'content-type': 'application/json',
-        'authorization': token,
-      });
+      Response response = await get(
+        Uri.parse(url),
+        headers: await Constants.getHeaders(),
+      );
 
-      var code = json.decode(response.body)['code'];
-      print(json.decode(response.body)['data']);
+      //Log.d(TAG, "$fName ${response.body}");
 
-      notifyListeners();
-      if (code == 404 || code == 500) {
-        return [false, json.decode(response.body)['error']];
-      } else if (code == 200) {
-        var data = json.decode(response.body)['data'];
-        user = User(
-          name: data['NAME'],
-          email: data['EMAIL'],
-          phone: data['PHONE_NUMBER'],
-          gender: data['GENDER'],
-          bloodGroup: data['BLOOD_GROUP'],
-          location: Location(
-            description: data['LOCATION']['DESCRIPTION'],
-            latitude: data['LOCATION']['LONGITUDE'],
-            longitude: data['LOCATION']['LATITUDE'],
-          ),
+      Map data = json.decode(response.body);
+      if (data['code'] == HttpSatusCode.OK) {
+        ProfileData profileData = ProfileData.fromJson(data['data']);
+        Log.d(TAG,
+            "$fName id: ${profileData.id}, name: ${profileData.name} profile data fetched");
+        return ProviderResponse(
+          success: true,
+          message: "ok",
+          data: profileData,
         );
-        print("user init");
-        print("user name : ${user.name}");
-        print("ok");
-        // print(user);
-        return [true, data];
       } else {
-        return [false, "unknown error"];
+        Log.d(TAG, "$fName not http 200");
+        return ProviderResponse(
+            success: false, message: "error fetching donation");
       }
-    } catch (error) {
-      print("error");
-      print(error);
-      return [false, error];
+    } catch (e) {
+      Log.d(TAG, "$fName error");
+      Log.d(TAG, "$fName ${e}");
+      return ProviderResponse(success: false, message: "error");
     }
   }
 
-  // Future<void> addProduct(Product product) async {
-  //   final url = Uri.https('flutter-update.firebaseio.com', '/products.json');
-  //   try {
-  //     final response = await http.post(
-  //       url,
-  //       body: json.encode({
-  //         'title': product.title,
-  //         'description': product.description,
-  //         'imageUrl': product.imageUrl,
-  //         'price': product.price,
-  //         'isFavorite': product.isFavorite,
-  //       }),
-  //     );
-  //     final newProduct = Product(
-  //       title: product.title,
-  //       description: product.description,
-  //       price: product.price,
-  //       imageUrl: product.imageUrl,
-  //       id: json.decode(response.body)['name'],
-  //     );
-  //     _items.add(newProduct);
-  //     // _items.insert(0, newProduct); // at the start of the list
-  //     notifyListeners();
-  //   } catch (error) {
-  //     print(error);
-  //     throw error;
-  //   }
-  // }
+  Future<ProviderResponse> searchUser(String name) async {
+    String url = "${Environment.apiUrl}/user/search/$name";
+    String fName = "searchUser():";
+    Log.d(TAG, "$fName fetching from: $url");
 
-  // Future<void> updateProduct(String id, Product newProduct) async {
-  //   final prodIndex = _items.indexWhere((prod) => prod.id == id);
-  //   if (prodIndex >= 0) {
-  //     final url =
-  //         Uri.https('flutter-update.firebaseio.com', '/products/$id.json');
-  //     await http.patch(url,
-  //         body: json.encode({
-  //           'title': newProduct.title,
-  //           'description': newProduct.description,
-  //           'imageUrl': newProduct.imageUrl,
-  //           'price': newProduct.price
-  //         }));
-  //     _items[prodIndex] = newProduct;
-  //     notifyListeners();
-  //   } else {
-  //     print('...');
-  //   }
-  // }
+    try {
+      Response response = await get(
+        Uri.parse(url),
+        headers: await Constants.getHeaders(),
+      );
 
-  // Future<void> deleteProduct(String id) async {
-  //   final url =
-  //       Uri.https('flutter-update.firebaseio.com', '/products/$id.json');
-  //   final existingProductIndex = _items.indexWhere((prod) => prod.id == id);
-  //   var existingProduct = _items[existingProductIndex];
-  //   _items.removeAt(existingProductIndex);
-  //   notifyListeners();
-  //   final response = await http.delete(url);
-  //   if (response.statusCode >= 400) {
-  //     _items.insert(existingProductIndex, existingProduct);
-  //     notifyListeners();
-  //     throw HttpException('Could not delete product.');
-  //   }
-  //   existingProduct = null;
-  // }
+      Log.d(TAG, "$fName ${response.body}");
+
+      Map data = json.decode(response.body);
+      if (data['code'] == HttpSatusCode.OK) {
+        List dataListJson = data['data'];
+        List<UserSearhResult> userSearchResultList = dataListJson.map((e) {
+          return UserSearhResult.fromJson(e);
+        }).toList();
+        Log.d(TAG, "$fName Total search result : ${userSearchResultList.length}");
+        return ProviderResponse(
+          success: true,
+          message: "ok",
+          data: userSearchResultList,
+        );
+      } else {
+        Log.d(TAG, "$fName not http 200");
+        return ProviderResponse(
+            success: false, message: "error fetching users by search");
+      }
+    } catch (e) {
+      Log.d(TAG, "$fName error");
+      Log.d(TAG, "$fName ${e}");
+      return ProviderResponse(success: false, message: "error");
+    }
+  }
 }

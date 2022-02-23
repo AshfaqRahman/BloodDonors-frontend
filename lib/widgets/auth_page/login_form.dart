@@ -1,4 +1,4 @@
-import 'package:bms_project/modals/user.dart';
+import 'package:bms_project/modals/user_model.dart';
 import 'package:bms_project/providers/users_provider.dart';
 import 'package:bms_project/screen/home_screen.dart';
 import 'package:flutter/material.dart';

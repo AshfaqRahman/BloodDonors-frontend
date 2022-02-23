@@ -1,7 +1,7 @@
 // import 'dart:ffi';
 import 'package:latlong2/latlong.dart';
 import 'package:bms_project/modals/location.dart';
-import 'package:bms_project/modals/user.dart';
+import 'package:bms_project/modals/user_model.dart';
 import 'package:bms_project/providers/users_provider.dart';
 import 'package:bms_project/widgets/common/blood_group_selection.dart';
 import 'package:bms_project/widgets/common/location_input.dart';

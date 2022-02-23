@@ -10,7 +10,7 @@ class Chat {
 
   String userId;
   String userName;
-  ChatMessage chatMessage;
+  ChatMessage? chatMessage;
   bool isSender;
 
   factory Chat.fromJson(Map<String, dynamic> json) => Chat(
@@ -23,7 +23,7 @@ class Chat {
   Map<String, dynamic> toJson() => {
         "user_id": userId,
         "user_name": userName,
-        "last_message": chatMessage.toJson(),
+        "last_message": chatMessage!.toJson(),
         "is_sender": isSender,
       };
 }

@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -21,6 +22,11 @@ class Constants {
   static void deleteToken() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.clear();
+  }
+
+  /// Construct a color from a hex code string, of the format #RRGGBB.
+  static Color hexToColor(String hexString, {String alphaChannel = 'FF'}) {
+    return Color(int.parse(hexString.replaceFirst('#', '0x$alphaChannel')));
   }
 }
 

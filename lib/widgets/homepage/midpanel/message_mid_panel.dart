@@ -1,7 +1,9 @@
 import 'dart:math';
 
+import 'package:bms_project/modals/user_model.dart';
 import 'package:bms_project/providers/chat_provider.dart';
 import 'package:bms_project/providers/provider_response.dart';
+import 'package:bms_project/providers/users_provider.dart';
 import 'package:bms_project/utils/environment.dart';
 import 'package:bms_project/utils/token.dart';
 import 'package:flutter/material.dart';
@@ -32,6 +34,9 @@ class _ChatMidPanelState extends State<ChatMidPanel> {
   // state variables
   Chat? activeChat = null; // currently acitve chat with wiche user is chating
   List<ChatMessage> messages = []; // messages
+
+  // user search text
+  String searchedUserName = "";
 
   ScrollController _messagListController = ScrollController();
 
@@ -86,6 +91,14 @@ class _ChatMidPanelState extends State<ChatMidPanel> {
         curve: Curves.easeOut);
   }
 
+  Future<List<UserSearhResult>> _searchUser(String userName) async {
+    ProviderResponse response =
+        await Provider.of<UsersProvider>(context, listen: false)
+            .searchUser(userName);
+    List<UserSearhResult> data = response.success ? response.data ?? [] : [];
+    return data;
+  }
+
   @override
   Widget build(BuildContext context) {
     double width = MediaQuery.of(context).size.width;
@@ -100,7 +113,15 @@ class _ChatMidPanelState extends State<ChatMidPanel> {
             child: Column(children: <Widget>[
               MyTextField(
                 hint: "Search for people",
-                onSubmitText: (value) {},
+                vanishTextOnSubmit: false,
+                onSubmitText: (String value) {
+                  setState(() {
+                    searchedUserName = value.trim();
+                    if (searchedUserName != "") {
+                      _searchUser(searchedUserName);
+                    }
+                  });
+                },
                 suffixIcon: const Icon(
                   Icons.search,
                   color: Colors.white,
@@ -110,9 +131,31 @@ class _ChatMidPanelState extends State<ChatMidPanel> {
                 height: 15,
                 thickness: 1,
               ),
-              ChatListContainer(
-                onChatSelected: _activeChatChanged,
-              )
+              (searchedUserName != "")
+                  ? Column(
+                      children: [
+                        InkWell(
+                            onTap: () {
+                              setState(() {
+                                searchedUserName = "";
+                              });
+                            },
+                            child: Container(
+                              width: double.infinity,
+                              alignment: Alignment.center,
+                              padding: EdgeInsets.symmetric(vertical: 5),
+                              child: Text('Clear'),
+                            )),
+                        Divider(),
+                        UserSearchListContainer(
+                          query: searchedUserName,
+                          onChatSelected: _activeChatChanged,
+                        ),
+                      ],
+                    )
+                  : ChatListContainer(
+                      onChatSelected: _activeChatChanged,
+                    )
             ]),
           ),
         ),
@@ -190,6 +233,65 @@ class _ChatMidPanelState extends State<ChatMidPanel> {
         Log.d(TAG, "message now: ${messages.length}");
       });
     });
+  }
+}
+
+class UserSearchListContainer extends StatelessWidget {
+  static String TAG = "UserSearchListContainer";
+
+  UserSearchListContainer({
+    Key? key,
+    required this.query,
+    required this.onChatSelected,
+  }) : super(key: key);
+
+  final String query;
+  final Function onChatSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder(
+      future: _searchUser(context, query),
+      builder: ((context, AsyncSnapshot<List<UserSearhResult>> snapshot) {
+        if (!snapshot.hasData ||
+            snapshot.connectionState == ConnectionState.waiting) {
+          return const CircularProgressIndicator();
+        }
+
+        List<UserSearhResult>? result = snapshot.data;
+
+        return result == null || result.isEmpty
+            ? Text("No search result")
+            : ListView.separated(
+                shrinkWrap: true,
+                itemBuilder: ((context, index) {
+                  if (index == result.length) return Container();
+                  UserSearhResult user = result[index];
+                  return InkWell(
+                    onTap: () {
+                      Log.d(TAG, "selected user ${user.name} , id: ${user.id}");
+                      onChatSelected(user.toChat());
+                    },
+                    child: ChatItem(chat: user.toChat()),
+                  );
+                }),
+                separatorBuilder: (context, index) {
+                  return const Divider();
+                },
+                itemCount: result.length + 1,
+              );
+      }),
+    );
+  }
+
+  Future<List<UserSearhResult>> _searchUser(
+      BuildContext context, String userName) async {
+    ProviderResponse response =
+        await Provider.of<UsersProvider>(context, listen: false)
+            .searchUser(userName);
+    Log.d(TAG, "UserSearhResult success: ${response.success}");
+    List<UserSearhResult> data = response.success ? response.data ?? [] : [];
+    return data;
   }
 }
 
@@ -277,24 +379,7 @@ class _ChatListContainerState extends State<ChatListContainer> {
                     TAG, "selected user ${chat.userName} , id: ${chat.userId}");
                 widget.onChatSelected(chat);
               },
-              child: Row(
-                children: [
-                  SizedBox(
-                    width: 20,
-                  ),
-                  ProfilePictureFromName(
-                    name: chat.userName,
-                    radius: 20,
-                    fontsize: 14,
-                    characterCount: 2,
-                    random: true,
-                  ),
-                  SizedBox(
-                    width: 20,
-                  ),
-                  Text(chat.userName)
-                ],
-              ),
+              child: ChatItem(chat: chat),
             );
           }),
           separatorBuilder: (context, index) {
@@ -303,6 +388,37 @@ class _ChatListContainerState extends State<ChatListContainer> {
           itemCount: chatList.length + 1,
         );
       },
+    );
+  }
+}
+
+class ChatItem extends StatelessWidget {
+  const ChatItem({
+    Key? key,
+    required this.chat,
+  }) : super(key: key);
+
+  final Chat chat;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        SizedBox(
+          width: 20,
+        ),
+        ProfilePictureFromName(
+          name: chat.userName,
+          radius: 20,
+          fontsize: 14,
+          characterCount: 2,
+          random: true,
+        ),
+        SizedBox(
+          width: 20,
+        ),
+        Text(chat.userName)
+      ],
     );
   }
 }
@@ -330,9 +446,14 @@ class MessageContainer extends StatelessWidget {
       itemCount: messages.length + 1,
       itemBuilder: (BuildContext context, int idx) {
         return idx != messages.length
-            ? MessageItem(
-                chatMessage: messages[idx],
-                userId: activeChat.userId,
+            ? FutureBuilder(
+                future: AuthToken.parseUserId(),
+                builder: (context, AsyncSnapshot<String> snapshot) {
+                  return MessageItem(
+                    chatMessage: messages[idx],
+                    userId: snapshot.data!,
+                  );
+                },
               )
             : Container(
                 height: 70,
@@ -406,9 +527,10 @@ class SendMessageContainer extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       alignment: Alignment.bottomCenter,
-      padding: const EdgeInsets.symmetric(vertical: 10),
+      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 5),
       child: MyTextField(
         hint: "Write message",
+        vanishTextOnSubmit: true,
         onSubmitText: (value) {
           if (value != "") {
             sendMessage(value);
@@ -444,12 +566,14 @@ class MyTextField extends StatelessWidget {
     required this.hint,
     required this.onSubmitText,
     required this.suffixIcon,
+    required this.vanishTextOnSubmit,
   }) : super(key: key);
 
   TextEditingController msgController = TextEditingController();
   final String hint;
   final Function onSubmitText;
   final Icon suffixIcon;
+  final bool vanishTextOnSubmit;
 
   @override
   Widget build(BuildContext context) {
@@ -461,7 +585,9 @@ class MyTextField extends StatelessWidget {
         Log.d(TAG, value);
         if (value != "") {
           onSubmitText(value);
-          msgController.text = "";
+          if (vanishTextOnSubmit) {
+            msgController.text = "";
+          }
         }
       },
       decoration: InputDecoration(
@@ -496,7 +622,9 @@ class MyTextField extends StatelessWidget {
                 String msg = msgController.text;
                 if (msg != "") {
                   onSubmitText(msg);
-                  msgController.text = "";
+                  if (vanishTextOnSubmit) {
+                    msgController.text = "";
+                  }
                 }
               },
               icon: suffixIcon,

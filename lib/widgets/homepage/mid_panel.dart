@@ -19,13 +19,13 @@ class _MidPanelState extends State<MidPanel> {
   Widget build(BuildContext context) {
     switch (widget.option) {
       case LeftPanelOption.PROFILE:
-        return ProfileMidPanel();
+        return const ProfileMidPanel();
       case LeftPanelOption.HOME:
         return HomeMidPanel();
       case LeftPanelOption.MESSAGE:
-        return ChatMidPanel();
+        return const ChatMidPanel();
       case LeftPanelOption.NOTIFICATION:
-        return NotificationMidPanel();
+        return const NotificationMidPanel();
       case LeftPanelOption.SEARCH_BLOOD:
         return Container(
           child: Text("s b"),

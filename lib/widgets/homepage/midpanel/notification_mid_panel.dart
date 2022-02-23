@@ -31,11 +31,10 @@ class _NotificationMidPanelState extends State<NotificationMidPanel> {
       child: FutureBuilder(
         future: _fetchNotifaction(),
         builder: (context, AsyncSnapshot<List<NotificationModel>> snapshot) {
-          
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           }
-          
+
           if (!snapshot.hasData) return const NoNotificationWidget();
 
           List<NotificationModel> notificationList = snapshot.data ?? [];
@@ -94,23 +93,7 @@ class NotificationItem extends StatelessWidget {
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            RichText(
-              text: TextSpan(
-                  style: Theme.of(context)
-                      .textTheme
-                      .headline6
-                      ?.copyWith(fontSize: 18),
-                  children: [
-                    TextSpan(
-                      text: "${notificationModel.actorName} ",
-                      style: Theme.of(context)
-                          .textTheme
-                          .headline6
-                          ?.copyWith(fontWeight: FontWeight.bold, fontSize: 18),
-                    ),
-                    TextSpan(text: notificationModel.message)
-                  ]),
-            ),
+            buildMessasgeText(context, notificationModel)??Container(),
             Text(
               Constants.dateFormat.format(notificationModel.created.toLocal()),
               style: Theme.of(context).textTheme.caption,
@@ -119,5 +102,42 @@ class NotificationItem extends StatelessWidget {
         )
       ]),
     );
+  }
+
+  RichText? buildMessasgeText(context, NotificationModel model) {
+    switch (model.type.toLowerCase()) {
+      case "message":
+        return RichText(
+          text: TextSpan(
+              style:
+                  Theme.of(context).textTheme.headline6?.copyWith(fontSize: 18),
+              children: [
+                TextSpan(text: notificationModel.message),
+                TextSpan(
+                  text: " from ${notificationModel.actorName}",
+                  style: Theme.of(context)
+                      .textTheme
+                      .headline6
+                      ?.copyWith(fontWeight: FontWeight.bold, fontSize: 18),
+                ),
+              ]),
+        );
+      default:
+        RichText(
+          text: TextSpan(
+              style:
+                  Theme.of(context).textTheme.headline6?.copyWith(fontSize: 18),
+              children: [
+                TextSpan(
+                  text: "${notificationModel.actorName} ",
+                  style: Theme.of(context)
+                      .textTheme
+                      .headline6
+                      ?.copyWith(fontWeight: FontWeight.bold, fontSize: 18),
+                ),
+                TextSpan(text: notificationModel.message)
+              ]),
+        );
+    }
   }
 }
