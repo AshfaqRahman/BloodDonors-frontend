@@ -109,4 +109,41 @@ class BloodPostProvider with ChangeNotifier {
       return ProviderResponse(success: false, message: "error");
     }
   }
+
+  Future<ProviderResponse> getMyBloodPosts(String userId) async {
+    String url = "${Environment.apiUrl}/post/blood-post/me";
+    String fName = "getPostByUserId():";
+    Log.d(TAG, "$fName fetching from: $url");
+
+    try {
+      http.Response response = await http.get(
+        Uri.parse(url),
+        headers: await Constants.getHeaders(),
+      );
+
+      Log.d(TAG, "$fName  ${response.body}");
+
+      Map data = json.decode(response.body);
+      if (data['code'] == HttpSatusCode.OK) {
+        List datListJson = data['data'];
+        List<bp.BloodPost> postList = datListJson.map((e) {
+          return bp.BloodPost.fromJson(e);
+        }).toList();
+        Log.d(TAG, "$fName Total donation : ${postList.length}");
+        return ProviderResponse(
+          success: true,
+          message: "ok",
+          data: postList,
+        );
+      } else {
+        Log.d(TAG, "$fName not http 200");
+        return ProviderResponse(
+            success: false, message: "error fetching donation");
+      }
+    } catch (e) {
+      Log.d(TAG, "$fName error");
+      Log.d(TAG, "$fName ${e}");
+      return ProviderResponse(success: false, message: "error");
+    }
+  }
 }

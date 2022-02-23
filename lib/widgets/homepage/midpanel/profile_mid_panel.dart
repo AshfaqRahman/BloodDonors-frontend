@@ -1,5 +1,7 @@
+import 'package:bms_project/modals/blood_post_model.dart';
 import 'package:bms_project/modals/donation_model.dart';
 import 'package:bms_project/modals/user_model.dart';
+import 'package:bms_project/providers/blood_post_provider.dart';
 import 'package:bms_project/providers/donation_provider.dart';
 import 'package:bms_project/providers/provider_response.dart';
 import 'package:bms_project/providers/users_provider.dart';
@@ -10,6 +12,8 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+
+import '../../post_screen/blood_post.dart';
 
 class ProfileMidPanel extends StatefulWidget {
   const ProfileMidPanel({Key? key}) : super(key: key);
@@ -29,44 +33,177 @@ class _ProfileMidPanelState extends State<ProfileMidPanel> {
 
   @override
   Widget build(BuildContext context) {
-    /* return Container(
-      child: FutureBuilder(
-        future: _fetchDonations(),
-        builder: (context, snapshot) {
-          return Center(
-            child: Text("Profile"),
-          );
-        },
-      ),
-    ); */
-    return FutureBuilder(
-        future:
-            Provider.of<UsersProvider>(context, listen: false).getUserData(),
-        builder: (context, AsyncSnapshot<ProviderResponse> snapshot) {
-          if (!snapshot.hasData ||
-              snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
+    return DefaultTabController(
+      length: 2,
+      child: Scaffold(
+        body: Column(
+          children: <Widget>[
+            // construct the profile details widget here
+            FutureBuilder(
+                future: Provider.of<UsersProvider>(context, listen: false)
+                    .getUserData(),
+                builder: (context, AsyncSnapshot<ProviderResponse> snapshot) {
+                  if (!snapshot.hasData ||
+                      snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
 
-          ProviderResponse response = snapshot.data!;
-          ProfileData profileData = response.data;
+                  ProviderResponse response = snapshot.data!;
+                  ProfileData profileData = response.data;
 
-          return Container(
-            padding: EdgeInsets.only(top: 12),
-            height: double.infinity,
-            color: Constants.hexToColor("#f6f6f6"),
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
+                  return Container(
+                    padding: EdgeInsets.only(top: 12),
+                    color: Constants.hexToColor("#f6f6f6"),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        UserInfoWidget(profileData: profileData),
+                        // the tab bar with two items
+                      ],
+                    ),
+                  );
+                }),
+            UserCreatedDataWidget(),
+
+            // create widgets for each tab bar here
+            Expanded(
+              child: TabBarView(
                 children: [
-                  UserInfoWidget(profileData: profileData),
-                  // the tab bar with two items
-                  UserCreatedDataWidget()
+                  // first tab bar view widget
+                  UserBloodPostWidget(),
+                  // second tab bar viiew widget
+                  UserDonationWidget(),
                 ],
               ),
             ),
-          );
-        });
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class UserDonationWidget extends StatelessWidget {
+  const UserDonationWidget({
+    Key? key,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder(
+      future: _fetchDonations(
+        context,
+      ),
+      builder: (context, AsyncSnapshot<List<Donation>> snapshot) {
+        if (!snapshot.hasData ||
+            snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        List<Donation> list = snapshot.data ?? [];
+
+        return list.isEmpty
+            ? const Center(
+                child: Text("You haven't donated yet!"),
+              )
+            : Container(
+                //width: MediaQuery.of(context).size.width*0.55,
+                padding: const EdgeInsets.symmetric(vertical: 15),
+                child: ListView.separated(
+                    itemBuilder: (context, index) {
+                      if (index == list.length) return Container();
+                      Donation donation = list[index];
+
+                      return Container(
+                          child: Column(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          Text(donation.location.displayName),
+                          Text(DateFormat("dd MMM yyyy")
+                              .format(donation.donationTime.toLocal()))
+                        ],
+                      ));
+                    },
+                    separatorBuilder: (context, index) {
+                      return Divider();
+                    },
+                    itemCount: list.length + 1),
+                /* child: ListView(
+                  controller: ScrollController(),
+                  children: list.map((Donation donation) {
+                    return Container(
+                        child: Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        Text(donation.location.displayName),
+                        Text(Constants.dateFormat
+                            .format(donation.donationTime.toLocal()))
+                      ],
+                    ));
+                  }).toList(),
+                ), */
+              );
+      },
+    );
+  }
+
+  Future<List<Donation>> _fetchDonations(context) async {
+    ProviderResponse response =
+        await Provider.of<DonationProvider>(context, listen: false)
+            .getDonations(await AuthToken.parseUserId());
+    List<Donation> data = response.success ? response.data ?? [] : [];
+    return data;
+  }
+}
+
+class UserBloodPostWidget extends StatelessWidget {
+  const UserBloodPostWidget({
+    Key? key,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder(
+      future: _fetchBloodPost(
+        context,
+      ),
+      builder: (context, AsyncSnapshot<List<BloodPost>> snapshot) {
+        if (!snapshot.hasData ||
+            snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        List<BloodPost> list = snapshot.data ?? [];
+
+        return list.isEmpty
+            ? const Center(
+                child: Text("You haven't posted anything!"),
+              )
+            : Container(
+                //width: MediaQuery.of(context).size.width*0.55,
+                padding: const EdgeInsets.symmetric(vertical: 15),
+                child: ListView(
+                  controller: ScrollController(),
+                  children: list.map((BloodPost post) {
+                    return Container(
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 5, horizontal: 35),
+                        child: BloodPostWidget(
+                          postData: post,
+                        ));
+                  }).toList(),
+                ),
+              );
+      },
+    );
+  }
+
+  Future<List<BloodPost>> _fetchBloodPost(context) async {
+    ProviderResponse response =
+        await Provider.of<BloodPostProvider>(context, listen: false)
+            .getMyBloodPosts(await AuthToken.parseUserId());
+    List<BloodPost> data = response.success ? response.data ?? [] : [];
+    return data;
   }
 }
 
@@ -79,27 +216,29 @@ class UserCreatedDataWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: EdgeInsets.all(5),
-      child: DefaultTabController(
-        // https://stackoverflow.com/questions/63304112/how-to-create-a-tab-bar-at-center-of-the-screen-in-flutter
-        length: 2,
-        child: SizedBox(
-          height: 50,
-          child: AppBar(
-            backgroundColor: Colors.white,
-            foregroundColor: Theme.of(context).primaryColor,
-            bottom: const TabBar(
-              labelColor: Colors.black,
-              tabs: [
-                Tab(
-                  text: "Blood Posts",
-                ),
-                Tab(
-                  text: "Donations",
-                ),
-              ],
+      width: double.infinity,
+      child: Column(
+        mainAxisSize: MainAxisSize.max,
+        children: [
+          SizedBox(
+            height: 50,
+            child: AppBar(
+              backgroundColor: Colors.white,
+              foregroundColor: Theme.of(context).primaryColor,
+              bottom: const TabBar(
+                labelColor: Colors.black,
+                tabs: [
+                  Tab(
+                    text: "Blood Posts",
+                  ),
+                  Tab(
+                    text: "Donations",
+                  ),
+                ],
+              ),
             ),
           ),
-        ),
+        ],
       ),
     );
   }

@@ -1,4 +1,5 @@
 import 'package:bms_project/providers/donation_provider.dart';
+import 'package:bms_project/providers/provider_response.dart';
 import 'package:bms_project/widgets/common/dialog_topbar_widget.dart';
 import 'package:bms_project/widgets/common/location_input.dart';
 import 'package:flutter/material.dart';
@@ -38,8 +39,10 @@ class _AddDonationDialogState extends State<AddDonationDialog> {
       return;
     }
 
-    Provider.of<DonationProvider>(context, listen: false)
+    ProviderResponse response = await Provider.of<DonationProvider>(context, listen: false)
         .addDonation(selectedLocation!, selectedDate!);
+
+    Navigator.of(context).pop(response);
   }
 
   @override

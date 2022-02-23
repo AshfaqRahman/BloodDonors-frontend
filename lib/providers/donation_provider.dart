@@ -33,7 +33,7 @@ class DonationProvider with ChangeNotifier {
       Log.d(TAG, "$fName  ${response.body}");
 
       Map data = json.decode(response.body);
-      if (data['code'] == HttpSatusCode.OK) {
+      if (data['code'] == HttpSatusCode.CREATED) {
         /* List chatMessageJsonList = data['data'];
         List<ChatMessage> chatMessageList = chatMessageJsonList.map((e) {
           return ChatMessage.fromJson(e);

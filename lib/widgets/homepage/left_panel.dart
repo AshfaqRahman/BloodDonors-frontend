@@ -147,6 +147,17 @@ class _LeftPanelState extends State<LeftPanel> {
                   content: AddDonationDialog(),
                 );
               });
+
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            duration: const Duration(seconds: 15),
+            // width: MediaQuery.of(context).size.width * 0.2,
+            margin: EdgeInsets.only(
+                left: MediaQuery.of(context).size.width * 0.7,
+                right: 20,
+                bottom: 20),
+            behavior: SnackBarBehavior.floating,
+            content: Text("Donation added successfully."),
+          ),);
         }
       },
     ];
