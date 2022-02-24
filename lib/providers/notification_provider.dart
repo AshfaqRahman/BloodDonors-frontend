@@ -24,7 +24,7 @@ class NotificationProvider with ChangeNotifier {
         headers: await Constants.getHeaders(),
       );
 
-      //Log.d(TAG,"$fName  ${response.body}");
+      Log.d(TAG,"$fName  ${response.body}");
 
       Map data = json.decode(response.body);
       if (data['code'] == HttpSatusCode.OK) {
@@ -38,10 +38,10 @@ class NotificationProvider with ChangeNotifier {
               NotificationModel.fromJson(notificationJsonList[i]);
 
           if (notificationModel.actorId != userId)
-            notificationList.add(notificationModel);
+            notificationList.add( notificationModel);
         }
         
-        Log.d(TAG, "$fName Total notifications : ${notificationList.length}");
+        //Log.d(TAG, "$fName Total notifications : ${notificationList.length}");
         return ProviderResponse(
           success: true,
           message: "ok",

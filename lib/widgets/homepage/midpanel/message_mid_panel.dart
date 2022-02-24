@@ -1,9 +1,11 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:bms_project/modals/user_model.dart';
 import 'package:bms_project/providers/chat_provider.dart';
 import 'package:bms_project/providers/provider_response.dart';
 import 'package:bms_project/providers/users_provider.dart';
+import 'package:bms_project/utils/constant.dart';
 import 'package:bms_project/utils/environment.dart';
 import 'package:bms_project/utils/token.dart';
 import 'package:flutter/material.dart';
@@ -18,6 +20,24 @@ import '../../../utils/debug.dart';
 import '../../../utils/socket_events_util.dart';
 import '../../common/profile_picture.dart';
 
+class StreamSocket {
+  static String TAG = "StreamSocket";
+  final _socketResponse = StreamController<dynamic>();
+
+  void addResponse(dynamic event) {
+    Log.d(TAG, event);
+    _socketResponse.sink.add(event);
+  }
+
+  Stream<dynamic> getResponse() {
+    return _socketResponse.stream;
+  }
+
+  void dispose() {
+    _socketResponse.close();
+  }
+}
+
 class ChatMidPanel extends StatefulWidget {
   const ChatMidPanel({Key? key}) : super(key: key);
   @override
@@ -28,6 +48,8 @@ class _ChatMidPanelState extends State<ChatMidPanel> {
   static String TAG = "MyHomePage";
 
   late sio.Socket socket;
+
+  StreamSocket streamSocket = StreamSocket();
 
   bool userId = true;
 
@@ -47,7 +69,7 @@ class _ChatMidPanelState extends State<ChatMidPanel> {
   }
 
   void _activeChatChanged(Chat chat) {
-    activeChat = chat; // chage the acitve chat
+    activeChat = chat; // change the active chat
     messages.clear();
     Provider.of<ChatProvider>(context, listen: false)
         .getMessages(activeChat!.userId)
@@ -75,9 +97,7 @@ class _ChatMidPanelState extends State<ChatMidPanel> {
         receiverId: recieverId,
         message: msg,
         sentTime: DateTime.now());
-    setState(() {
-      messages.insert(0, chatMessage);
-    });
+    streamSocket.addResponse(chatMessage.toJson());
 
     // send to server
     Log.d(TAG, "sending: ${chatMessage.toJson()}");
@@ -87,7 +107,7 @@ class _ChatMidPanelState extends State<ChatMidPanel> {
   void _scrollToBottom() {
     _messagListController.animateTo(
         _messagListController.position.maxScrollExtent,
-        duration: Duration(milliseconds: 50),
+        duration: const Duration(milliseconds: 50),
         curve: Curves.easeOut);
   }
 
@@ -166,37 +186,50 @@ class _ChatMidPanelState extends State<ChatMidPanel> {
         Flexible(
           //message section
           flex: 2,
-          child: Container(
-            //  color: Colors.yellow,
-            //padding: EdgeInsets.symmetric(horizontal: width * 0.2),
-            child: activeChat == null
-                ? const NoChatSelectedWidget()
-                : Column(
-                    children: [
-                      MessageContainerBarWidget(
-                        activeChat: activeChat!,
+          child: StreamBuilder(
+            stream: streamSocket.getResponse(),
+            builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
+              Log.d(TAG, snapshot.data);
+              if (snapshot.hasData) {
+                messages.insert(
+                    0,
+                    ChatMessage.fromJson(
+                        snapshot.data as Map<String, dynamic>));
+              }
+              return Container(
+                //  color: Colors.yellow,
+                //padding: EdgeInsets.symmetric(horizontal: width * 0.2),
+                child: activeChat == null
+                    ? const NoChatSelectedWidget()
+                    : Column(
+                        children: [
+                          MessageContainerBarWidget(
+                            activeChat: activeChat!,
+                          ),
+                          Expanded(
+                            child: FutureBuilder(
+                              future: AuthToken.parseUserId(),
+                              builder:
+                                  (context, AsyncSnapshot<String> snapshot) {
+                                String userId = snapshot.data ?? "";
+                                if (userId == "") return Container();
+                                return MessageContainer(
+                                  messages: messages,
+                                  messageListController: _messagListController,
+                                  activeChat: activeChat!,
+                                );
+                              },
+                            ),
+                          ),
+                          Container(
+                            child: SendMessageContainer(
+                              sendMessage: _sendMessage,
+                            ),
+                          ),
+                        ],
                       ),
-                      Expanded(
-                        child: FutureBuilder(
-                          future: AuthToken.parseUserId(),
-                          builder: (context, AsyncSnapshot<String> snapshot) {
-                            String userId = snapshot.data ?? "";
-                            if (userId == "") return Container();
-                            return MessageContainer(
-                              messages: messages,
-                              messageListController: _messagListController,
-                              activeChat: activeChat!,
-                            );
-                          },
-                        ),
-                      ),
-                      Container(
-                        child: SendMessageContainer(
-                          sendMessage: _sendMessage,
-                        ),
-                      ),
-                    ],
-                  ),
+              );
+            },
           ),
         ),
       ],
@@ -204,34 +237,20 @@ class _ChatMidPanelState extends State<ChatMidPanel> {
   }
 
   void connectDartSocketClient() {
-    Log.d(TAG, "connecting to socket client sever: ${Environment.SOCKET_URL}");
-    socket = sio.io(
-        Environment.SOCKET_URL,
-        sio.OptionBuilder()
-            .setTransports(['websocket']) // for Flutter or Dart VM
-            .disableAutoConnect()
-            .build());
-    //https://stackoverflow.com/questions/68058896/latest-version-of-socket-io-nodejs-is-not-connecting-to-flutter-applications
-    socket.connect();
-    Log.d(TAG, "socket connected at ${socket.connected}");
-    //socket.onConnect((data) => null)
-    socket.onConnect((data) async {
-      Log.d(TAG, "connected");
-      socket.emit(SocketEvents.USER_REGISTER, await AuthToken.parseUserId());
-    });
-
+    socket = Constants.getSocket();
     addSocketMessageListener();
   }
 
   void addSocketMessageListener() {
     socket.on(SocketEvents.RECEIVE_MESSAGE, (data) {
       Log.d(TAG, "addSocketMessageListener(): $data");
-      ChatMessage chatMessage = ChatMessage.fromJson(data);
+      streamSocket.addResponse(data);
+      /* ChatMessage chatMessage = ChatMessage.fromJson(data);
       setState(() {
         Log.d(TAG, "message before: ${messages.length}");
         messages.insert(0, chatMessage);
         Log.d(TAG, "message now: ${messages.length}");
-      });
+      }); */
     });
   }
 }
@@ -349,7 +368,7 @@ class ChatListContainer extends StatefulWidget {
 }
 
 class _ChatListContainerState extends State<ChatListContainer> {
-  static const String TAG = "MessageRecieverContainer";
+  static const String TAG = "ChatListContainer";
 
   List<Chat> chatList = [];
 
@@ -449,6 +468,10 @@ class MessageContainer extends StatelessWidget {
             ? FutureBuilder(
                 future: AuthToken.parseUserId(),
                 builder: (context, AsyncSnapshot<String> snapshot) {
+                  if (!snapshot.hasData ||
+                      snapshot.connectionState == ConnectionState.waiting) {
+                    return Container(); //const Center(child: CircularProgressIndicator());
+                  }
                   return MessageItem(
                     chatMessage: messages[idx],
                     userId: snapshot.data!,

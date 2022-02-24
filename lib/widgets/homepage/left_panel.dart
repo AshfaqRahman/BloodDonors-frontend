@@ -84,11 +84,11 @@ class _LeftPanelState extends State<LeftPanel> {
       'icon': FontAwesomeIcons.bookmark,
       'title': "Bookmarks"
     }, */
-    {
+    /* {
       'index': LeftPanelOption.SETTINGS,
       'icon': FontAwesomeIcons.cog,
       'title': "Settings"
-    },
+    }, */
     {
       'index': LeftPanelOption.LOGOUT,
       'icon': FontAwesomeIcons.signOutAlt,

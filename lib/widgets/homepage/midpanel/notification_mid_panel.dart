@@ -1,10 +1,14 @@
 import 'package:bms_project/modals/notification_model.dart';
+import 'package:bms_project/providers/blood_post_provider.dart';
 import 'package:bms_project/providers/notification_provider.dart';
 import 'package:bms_project/providers/provider_response.dart';
 import 'package:bms_project/utils/constant.dart';
+import 'package:bms_project/utils/debug.dart';
 import 'package:bms_project/widgets/common/profile_picture.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
+import '../../../screen/blood_post_view_screen.dart';
 
 class NotificationMidPanel extends StatefulWidget {
   const NotificationMidPanel({Key? key}) : super(key: key);
@@ -14,6 +18,8 @@ class NotificationMidPanel extends StatefulWidget {
 }
 
 class _NotificationMidPanelState extends State<NotificationMidPanel> {
+  static String TAG = "NotificationMidPanel";
+
   Future<List<NotificationModel>> _fetchNotifaction() async {
     ProviderResponse response =
         await Provider.of<NotificationProvider>(context, listen: false)
@@ -38,6 +44,7 @@ class _NotificationMidPanelState extends State<NotificationMidPanel> {
           if (!snapshot.hasData) return const NoNotificationWidget();
 
           List<NotificationModel> notificationList = snapshot.data ?? [];
+          Log.d(TAG, "total notification: ${notificationList.length}");
           if (notificationList.isEmpty) return const NoNotificationWidget();
 
           return ListView.separated(
@@ -77,30 +84,71 @@ class NotificationItem extends StatelessWidget {
 
   final NotificationModel notificationModel;
 
+  bool isBloodPost() {
+    String type = notificationModel.type.toLowerCase();
+    return type == "blood post";
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
       padding: EdgeInsets.all(5),
-      child: Row(children: [
-        ProfilePictureFromName(
-            name: notificationModel.actorName,
-            radius: 25,
-            fontsize: 15,
-            characterCount: 2),
-        const SizedBox(
-          width: 15,
-        ),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            buildMessasgeText(context, notificationModel)??Container(),
-            Text(
-              Constants.dateFormat.format(notificationModel.created.toLocal()),
-              style: Theme.of(context).textTheme.caption,
-            ),
-          ],
-        )
-      ]),
+      child: isBloodPost()
+          ? InkWell(
+              onTap: () {
+                Provider.of<BloodPostProvider>(context, listen: false)
+                    .getPost(notificationModel.entityId)
+                    .then((value) {
+                  if (value['success']) {
+                    Navigator.of(context).pushNamed(BloodPostScreen.route,
+                        arguments: value['data']);
+                  }
+                });
+              },
+              child: Row(children: [
+                ProfilePictureFromName(
+                    name: notificationModel.actorName,
+                    radius: 25,
+                    fontsize: 15,
+                    characterCount: 2),
+                const SizedBox(
+                  width: 15,
+                ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    buildMessasgeText(context, notificationModel) ??
+                        Container(),
+                    Text(
+                      Constants.dateFormat
+                          .format(notificationModel.created.toLocal()),
+                      style: Theme.of(context).textTheme.caption,
+                    ),
+                  ],
+                )
+              ]),
+            )
+          : Row(children: [
+              ProfilePictureFromName(
+                  name: notificationModel.actorName,
+                  radius: 25,
+                  fontsize: 15,
+                  characterCount: 2),
+              const SizedBox(
+                width: 15,
+              ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  buildMessasgeText(context, notificationModel) ?? Container(),
+                  Text(
+                    Constants.dateFormat
+                        .format(notificationModel.created.toLocal()),
+                    style: Theme.of(context).textTheme.caption,
+                  ),
+                ],
+              )
+            ]),
     );
   }
 
@@ -122,8 +170,25 @@ class NotificationItem extends StatelessWidget {
                 ),
               ]),
         );
+      case "blood post":
+        return RichText(
+          text: TextSpan(
+              style:
+                  Theme.of(context).textTheme.headline6?.copyWith(fontSize: 18),
+              children: [
+                TextSpan(
+                  text: "${notificationModel.actorName} ",
+                  style: Theme.of(context)
+                      .textTheme
+                      .headline6
+                      ?.copyWith(fontWeight: FontWeight.bold, fontSize: 18),
+                ),
+                TextSpan(text: notificationModel.message)
+                //text: " posted for blood that matches your blood group"),
+              ]),
+        );
       default:
-        RichText(
+        return RichText(
           text: TextSpan(
               style:
                   Theme.of(context).textTheme.headline6?.copyWith(fontSize: 18),

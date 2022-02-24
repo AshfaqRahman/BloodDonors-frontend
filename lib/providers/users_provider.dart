@@ -113,7 +113,7 @@ class UsersProvider with ChangeNotifier {
         headers: await Constants.getHeaders(),
       );
 
-      //Log.d(TAG, "$fName ${response.body}");
+      Log.d(TAG, "$fName ${response.body}");
 
       Map data = json.decode(response.body);
       if (data['code'] == HttpSatusCode.OK) {

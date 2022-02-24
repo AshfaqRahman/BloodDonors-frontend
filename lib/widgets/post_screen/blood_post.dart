@@ -237,6 +237,9 @@ class _InteractionSectionState extends State<InteractionSection> {
         setState(() {});
       }
     });
+    fetchComments(context, widget.bloodPost.postId).then((List<Comment> value) {
+      totalComments = value.length;
+    });
   }
 
   var buttons = [
@@ -250,11 +253,11 @@ class _InteractionSectionState extends State<InteractionSection> {
       'activeIcon': Icons.mode_comment,
       'title': "Comment",
     },
-    {
+    /* {
       'icon': FontAwesomeIcons.shareSquare,
       'activeIcon': FontAwesomeIcons.shareSquare,
       'title': "Share",
-    },
+    }, */
   ];
 
   void onPressed(String button) async {

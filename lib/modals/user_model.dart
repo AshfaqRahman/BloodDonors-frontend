@@ -57,7 +57,7 @@ class ProfileData {
   String gender;
   OsmLocation location;
   bool available;
-  DateTime lastDonation;
+  DateTime? lastDonation;
 
   factory ProfileData.fromJson(Map<String, dynamic> json) => ProfileData(
         id: json["id"],
@@ -69,7 +69,7 @@ class ProfileData {
         gender: json["gender"],
         location: OsmLocation.fromJson(json["location"]),
         available: json["available"],
-        lastDonation: DateTime.parse(json["last_donation"]),
+        lastDonation: json["last_donation"]!= null ? DateTime.parse(json["last_donation"]) : null,
       );
 
   Map<String, dynamic> toJson() => {
@@ -82,7 +82,7 @@ class ProfileData {
         "gender": gender,
         "location": location.toJson(),
         "available": available,
-        "last_donation": lastDonation.toIso8601String(),
+        "last_donation": lastDonation?.toIso8601String(),
       };
 }
 

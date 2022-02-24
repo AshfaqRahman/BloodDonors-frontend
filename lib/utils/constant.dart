@@ -1,9 +1,42 @@
+import 'package:bms_project/utils/debug.dart';
+import 'package:bms_project/utils/socket_events_util.dart';
+import 'package:bms_project/utils/token.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:socket_io_client/socket_io_client.dart' as sio;
+
+import 'environment.dart';
+
 class Constants {
+  static String TAG = "Constants";
   static DateFormat dateFormat = DateFormat('dd MMM yyyy, hh:mma');
+
+  static sio.Socket? socket;
+
+  static sio.Socket getSocket() {
+    Log.d("Constants",
+        "connecting to socket client sever: ${Environment.SOCKET_URL}");
+    if (socket == null) {
+      socket = sio.io(
+          Environment.SOCKET_URL,
+          sio.OptionBuilder()
+              .setTransports(['websocket']) // for Flutter or Dart VM
+              .disableAutoConnect()
+              .build());
+      //https://stackoverflow.com/questions/68058896/latest-version-of-socket-io-nodejs-is-not-connecting-to-flutter-applications
+      socket!.connect();
+      Log.d(TAG, "socket connected at ${socket!.connected}");
+      //socket.onConnect((data) => null)
+      socket!.onConnect((data) async {
+        Log.d(TAG, "connected");
+        socket!.emit(SocketEvents.USER_REGISTER, await AuthToken.parseUserId());
+      });
+    }
+
+    return socket!;
+  }
 
   static Future<String> getToken() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
