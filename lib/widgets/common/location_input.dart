@@ -66,19 +66,6 @@ class _InputLocationState extends State<InputLocation> {
 
   @override
   Widget build(BuildContext context) {
-    /* return Column(
-      children: [
-        ElevatedButton(
-          onPressed: () => showMapDialog(),
-          child: Text('select your location'),
-        ),
-        if (_foundLocation)
-          Padding(
-            padding: EdgeInsets.all(10),
-            child: Text("Selected address: ${selectedLocation?.displayName}"),
-          ),
-      ],
-    ); */
     return TextField(
       readOnly: true,
       onTap: () {
@@ -107,7 +94,7 @@ class _InputLocationState extends State<InputLocation> {
           borderRadius: BorderRadius.circular(5),
         ),
         suffixIcon: Padding(
-          padding: const EdgeInsets.all(5),
+          padding: const EdgeInsets.symmetric(horizontal: 4),
           child: Container(
             padding: EdgeInsets.symmetric(vertical: 1),
             decoration: BoxDecoration(

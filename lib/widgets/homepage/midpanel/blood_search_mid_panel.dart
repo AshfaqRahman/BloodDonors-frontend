@@ -1,11 +1,15 @@
+import 'package:bms_project/modals/osm_model.dart';
 import 'package:bms_project/modals/user_model.dart';
 import 'package:bms_project/providers/search_provider.dart';
+import 'package:bms_project/screen/profile_screen.dart';
 import 'package:bms_project/utils/debug.dart';
 import 'package:bms_project/widgets/common/blood_group_selection.dart';
+import 'package:bms_project/widgets/common/location_input.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../providers/provider_response.dart';
+import '../../common/my_text_field.dart';
 import '../../common/profile_picture.dart';
 
 class BloodSearchMidPanel extends StatefulWidget {
@@ -19,6 +23,8 @@ class _BloodSearchMidPanelState extends State<BloodSearchMidPanel> {
   static String TAG = "BloodSearchMidPanel";
 
   String? selectedBloodGroup;
+  String? radius;
+  OsmLocation? selectedLocation;
 
   @override
   Widget build(BuildContext context) {
@@ -29,7 +35,7 @@ class _BloodSearchMidPanelState extends State<BloodSearchMidPanel> {
       alignment: Alignment.topCenter,
       child: Container(
         width: double.infinity,
-        padding: EdgeInsets.all(30),
+        padding: EdgeInsets.all(10),
         child: Card(
           child: Container(
             width: width * .3,
@@ -42,12 +48,36 @@ class _BloodSearchMidPanelState extends State<BloodSearchMidPanel> {
                 children: [
                   Row(
                     children: [
-                      BloodGroupDropdown(
-                          selectedBloodGroup: null,
-                          onBGSelected: (String bg) {
-                            selectedBloodGroup = bg;
-                            Log.d(TAG, "selected blood group: $bg");
-                          }),
+                      Flexible(
+                        child: BloodGroupDropdown(
+                            selectedBloodGroup: null,
+                            onBGSelected: (String bg) {
+                              selectedBloodGroup = bg;
+                              Log.d(TAG, "selected blood group: $bg");
+                            }),
+                      ),
+                      const SizedBox(
+                        width: 10,
+                      ),
+                      Flexible(
+                          child: MyTextField(
+                        hint: "Radius in km",
+                        onSubmitText: (value) {
+                          radius = value;
+                        },
+                        vanishTextOnSubmit: false,
+                      )),
+                      const SizedBox(
+                        width: 10,
+                      ),
+                      Flexible(
+                        child: InputLocation(
+                            onLocationSelected: (OsmLocation location) {
+                          Log.d(TAG,
+                              "selected location: ${location.displayName}");
+                          selectedLocation = location;
+                        }),
+                      ),
                       const SizedBox(
                         width: 10,
                       ),
@@ -61,7 +91,7 @@ class _BloodSearchMidPanelState extends State<BloodSearchMidPanel> {
                           ),
                           child: IconButton(
                             onPressed: () {
-                              setState(() {});
+                              setState(() {}); // refresh the screen
                             },
                             icon: const Icon(
                               Icons.search,
@@ -72,9 +102,12 @@ class _BloodSearchMidPanelState extends State<BloodSearchMidPanel> {
                       )
                     ],
                   ),
-                  if (selectedBloodGroup != null)
+                  if (selectedBloodGroup != null &&
+                      radius != null &&
+                      selectedLocation != null)
                     FutureBuilder(
-                        future: _searchBlood(selectedBloodGroup!),
+                        future: _searchBlood(
+                            selectedBloodGroup!, radius!, selectedLocation!),
                         builder: (context,
                             AsyncSnapshot<List<UserBloodSearchResult>>
                                 snapshot) {
@@ -117,12 +150,18 @@ class _BloodSearchMidPanelState extends State<BloodSearchMidPanel> {
     );
   }
 
-  Future<List<UserBloodSearchResult>> _searchBlood(String bloogGroup) async {
+  Future<List<UserBloodSearchResult>> _searchBlood(
+      String? bloogGroup, String? radius, OsmLocation? location) async {
+    List<UserBloodSearchResult> data = [];
+
+    if (bloogGroup == null || radius == null || location == null) {
+      return data;
+    }
+
     ProviderResponse response =
         await Provider.of<SearchProvider>(context, listen: false)
-            .searchBlood(bloogGroup);
-    List<UserBloodSearchResult> data =
-        response.success ? response.data ?? [] : [];
+            .searchBlood(bloogGroup, radius, location);
+    data = response.success ? response.data ?? [] : [];
     return data;
   }
 }
@@ -146,7 +185,8 @@ class RenderSearchResultWidget extends StatelessWidget {
         return InkWell(
           onTap: () {
             Log.d(TAG, "selected user ${user.name} , id: ${user.id}");
-            //onChatSelected(user.toChat());
+            Navigator.of(context)
+                .pushNamed(ProfileScreen.route, arguments: user.id);
           },
           child: UserItem(userData: user),
         );
@@ -156,7 +196,6 @@ class RenderSearchResultWidget extends StatelessWidget {
       },
       itemCount: userList.length + 1,
     );
-    ;
   }
 }
 

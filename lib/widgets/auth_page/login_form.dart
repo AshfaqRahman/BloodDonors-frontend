@@ -1,6 +1,7 @@
 import 'package:bms_project/modals/user_model.dart';
 import 'package:bms_project/providers/users_provider.dart';
 import 'package:bms_project/screen/home_screen.dart';
+import 'package:bms_project/utils/token.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
@@ -34,20 +35,7 @@ class _LoginFormState extends State<LoginForm> {
       child: Text(
         "OK",
       ),
-      onPressed: () {
-        if (flag) {
-          Provider.of<UsersProvider>(context, listen: false)
-              .getUserData()
-              .then((value) {
-            // print(value);
-            // print(value.runtimeType);
-            // print(value[0].runtimeType);
-            // print(value[1].runtimeType);
-            // print(value[1]['LONGITUDE'].runtimeType);
-
-            Navigator.of(context).pushNamed(HomeScreen.route);
-          });
-        }
+      onPressed: () async{
         Navigator.of(context).pop();
       },
     );

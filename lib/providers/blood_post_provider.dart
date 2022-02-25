@@ -111,7 +111,7 @@ class BloodPostProvider with ChangeNotifier {
   }
 
   Future<ProviderResponse> getMyBloodPosts(String userId) async {
-    String url = "${Environment.apiUrl}/post/blood-post/me";
+    String url = "${Environment.apiUrl}/post/blood-post/user/$userId";
     String fName = "getPostByUserId():";
     Log.d(TAG, "$fName fetching from: $url");
 

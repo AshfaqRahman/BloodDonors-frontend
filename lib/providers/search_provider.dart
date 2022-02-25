@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:bms_project/modals/osm_model.dart';
 import 'package:bms_project/modals/user_model.dart';
 import 'package:bms_project/providers/provider_response.dart';
 import 'package:flutter/cupertino.dart';
@@ -12,10 +13,12 @@ import '../utils/environment.dart';
 class SearchProvider with ChangeNotifier {
   static String TAG = "SearchProvider";
 
-  Future<ProviderResponse> searchBlood(String bloodGroup) async{
-    String url = "${Environment.apiUrl}/user/search-bg/$bloodGroup";
+  Future<ProviderResponse> searchBlood(
+      String bloodGroup, String radius, OsmLocation location) async {
+    String url =
+        "${Environment.apiUrl}/user/search-bg?blood_group=${Uri.encodeComponent(bloodGroup)}&radius=${radius}km&lat=${location.latitude}&lng=${location.longitude}";
     String fName = "searchBlood():";
-    Log.d(TAG, "$fName fetching from: $url");
+    Log.d(TAG, "$fName fetching from: $url}");
 
     try {
       Response response = await get(
@@ -28,10 +31,12 @@ class SearchProvider with ChangeNotifier {
       Map data = json.decode(response.body);
       if (data['code'] == HttpSatusCode.OK) {
         List dataListJson = data['data'];
-        List<UserBloodSearchResult> userSearchResultList = dataListJson.map((e) {
+        List<UserBloodSearchResult> userSearchResultList =
+            dataListJson.map((e) {
           return UserBloodSearchResult.fromJson(e);
         }).toList();
-        Log.d(TAG, "$fName Total search result  of bloog group $bloodGroup: ${userSearchResultList.length}");
+        Log.d(TAG,
+            "$fName Total search result  of bloog group $bloodGroup: ${userSearchResultList.length}");
         return ProviderResponse(
           success: true,
           message: "ok",

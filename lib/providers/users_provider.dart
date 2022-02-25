@@ -101,9 +101,9 @@ class UsersProvider with ChangeNotifier {
     }
   }
 
-  Future<ProviderResponse> getUserData() async {
+  Future<ProviderResponse> getUserData(String userId) async {
     // print("inside getUserData");
-    var url = '${Environment.apiUrl}/user/me';
+    var url = '${Environment.apiUrl}/user/fetch/$userId';
     String fName = "getUserData():";
     Log.d(TAG, "$fName fetching from: $url");
 

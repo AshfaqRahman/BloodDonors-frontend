@@ -1,4 +1,5 @@
 import 'package:bms_project/screen/auth_screen.dart';
+import 'package:bms_project/utils/token.dart';
 import 'package:bms_project/widgets/homepage/left_panel.dart';
 import 'package:bms_project/widgets/homepage/midpanel/blood_search_mid_panel.dart';
 import 'package:bms_project/widgets/homepage/midpanel/home_mid_panel.dart';
@@ -20,7 +21,13 @@ class _MidPanelState extends State<MidPanel> {
   Widget build(BuildContext context) {
     switch (widget.option) {
       case LeftPanelOption.PROFILE:
-        return const ProfileMidPanel();
+        return FutureBuilder(
+          future: AuthToken.parseUserId(),
+          builder: (context, AsyncSnapshot<String> snapshot){
+            if(!snapshot.hasData) return Container();
+            return  ProfileMidPanel(userId: snapshot.data!,);
+          },
+          );
       case LeftPanelOption.HOME:
         return HomeMidPanel();
       case LeftPanelOption.MESSAGE:

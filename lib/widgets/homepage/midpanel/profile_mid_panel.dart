@@ -16,20 +16,15 @@ import 'package:provider/provider.dart';
 import '../../post_screen/blood_post.dart';
 
 class ProfileMidPanel extends StatefulWidget {
-  const ProfileMidPanel({Key? key}) : super(key: key);
+  const ProfileMidPanel({Key? key, required this.userId}) : super(key: key);
+
+  final String userId;
 
   @override
   _ProfileMidPanelState createState() => _ProfileMidPanelState();
 }
 
 class _ProfileMidPanelState extends State<ProfileMidPanel> {
-  Future<List<Donation>> _fetchDonations() async {
-    ProviderResponse response =
-        await Provider.of<DonationProvider>(context, listen: false)
-            .getDonations(await AuthToken.parseUserId());
-    List<Donation> donationList = [];
-    return donationList;
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -41,7 +36,7 @@ class _ProfileMidPanelState extends State<ProfileMidPanel> {
             // construct the profile details widget here
             FutureBuilder(
                 future: Provider.of<UsersProvider>(context, listen: false)
-                    .getUserData(),
+                    .getUserData(widget.userId),
                 builder: (context, AsyncSnapshot<ProviderResponse> snapshot) {
                   if (!snapshot.hasData ||
                       snapshot.connectionState == ConnectionState.waiting) {
@@ -70,9 +65,13 @@ class _ProfileMidPanelState extends State<ProfileMidPanel> {
               child: TabBarView(
                 children: [
                   // first tab bar view widget
-                  UserBloodPostWidget(),
+                  UserBloodPostWidget(
+                    userId: widget.userId,
+                  ),
                   // second tab bar viiew widget
-                  UserDonationWidget(),
+                  UserDonationWidget(
+                    userId: widget.userId,
+                  ),
                 ],
               ),
             ),
@@ -83,17 +82,71 @@ class _ProfileMidPanelState extends State<ProfileMidPanel> {
   }
 }
 
-class UserDonationWidget extends StatelessWidget {
-  const UserDonationWidget({
+class UserBloodPostWidget extends StatelessWidget {
+  const UserBloodPostWidget({
     Key? key,
+    required this.userId,
   }) : super(key: key);
+
+  final String userId;
 
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
-      future: _fetchDonations(
-        context,
-      ),
+      future: _fetchBloodPost(context, userId),
+      builder: (context, AsyncSnapshot<List<BloodPost>> snapshot) {
+        if (!snapshot.hasData ||
+            snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        List<BloodPost> list = snapshot.data ?? [];
+
+        return list.isEmpty
+            ? const Center(
+                child: Text("You haven't posted anything!"),
+              )
+            : Container(
+                //width: MediaQuery.of(context).size.width*0.55,
+                padding: const EdgeInsets.symmetric(vertical: 15),
+                child: ListView(
+                  controller: ScrollController(),
+                  children: list.map((BloodPost post) {
+                    return Container(
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 5, horizontal: 35),
+                        child: BloodPostWidget(
+                          postData: post,
+                        ));
+                  }).toList(),
+                ),
+              );
+      },
+    );
+  }
+
+  Future<List<BloodPost>> _fetchBloodPost(context, String userId) async {
+    ProviderResponse response =
+        await Provider.of<BloodPostProvider>(context, listen: false)
+            .getMyBloodPosts(userId);
+    List<BloodPost> data = response.success ? response.data ?? [] : [];
+    return data;
+  }
+}
+
+
+class UserDonationWidget extends StatelessWidget {
+  const UserDonationWidget({
+    Key? key,
+    required this.userId,
+  }) : super(key: key);
+
+  final String userId;
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder(
+      future: _fetchDonations(context, userId),
       builder: (context, AsyncSnapshot<List<Donation>> snapshot) {
         if (!snapshot.hasData ||
             snapshot.connectionState == ConnectionState.waiting) {
@@ -147,65 +200,15 @@ class UserDonationWidget extends StatelessWidget {
     );
   }
 
-  Future<List<Donation>> _fetchDonations(context) async {
+  Future<List<Donation>> _fetchDonations(context, String userId) async {
     ProviderResponse response =
         await Provider.of<DonationProvider>(context, listen: false)
-            .getDonations(await AuthToken.parseUserId());
+            .getDonations(userId);
     List<Donation> data = response.success ? response.data ?? [] : [];
     return data;
   }
 }
 
-class UserBloodPostWidget extends StatelessWidget {
-  const UserBloodPostWidget({
-    Key? key,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return FutureBuilder(
-      future: _fetchBloodPost(
-        context,
-      ),
-      builder: (context, AsyncSnapshot<List<BloodPost>> snapshot) {
-        if (!snapshot.hasData ||
-            snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
-        }
-
-        List<BloodPost> list = snapshot.data ?? [];
-
-        return list.isEmpty
-            ? const Center(
-                child: Text("You haven't posted anything!"),
-              )
-            : Container(
-                //width: MediaQuery.of(context).size.width*0.55,
-                padding: const EdgeInsets.symmetric(vertical: 15),
-                child: ListView(
-                  controller: ScrollController(),
-                  children: list.map((BloodPost post) {
-                    return Container(
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 5, horizontal: 35),
-                        child: BloodPostWidget(
-                          postData: post,
-                        ));
-                  }).toList(),
-                ),
-              );
-      },
-    );
-  }
-
-  Future<List<BloodPost>> _fetchBloodPost(context) async {
-    ProviderResponse response =
-        await Provider.of<BloodPostProvider>(context, listen: false)
-            .getMyBloodPosts(await AuthToken.parseUserId());
-    List<BloodPost> data = response.success ? response.data ?? [] : [];
-    return data;
-  }
-}
 
 class UserCreatedDataWidget extends StatelessWidget {
   const UserCreatedDataWidget({
